@@ -30,10 +30,11 @@ actor ScanningEngine {
     private var homeURL: URL?
     private var pendingDirectories: [FileNode] = []
 
-    /// Check if a URL is a TCC-protected directory (direct child of home)
+    /// Check if a URL is a TCC-protected directory (direct child of home).
+    /// Uses path comparison to avoid URL canonicalization mismatches.
     private func isTCCProtected(url: URL) -> Bool {
         guard let homeURL else { return false }
-        return url.deletingLastPathComponent().standardizedFileURL == homeURL.standardizedFileURL
+        return url.deletingLastPathComponent().path == homeURL.path
             && Self.tccProtectedNames.contains(url.lastPathComponent)
     }
 
@@ -91,13 +92,6 @@ actor ScanningEngine {
         node.parent = parent
         directoriesScanned += 1
 
-        // Skip TCC-protected directories during initial scan
-        if skipTCC && isTCCProtected(url: url) {
-            node.awaitingPermission = true
-            pendingDirectories.append(node)
-            return node
-        }
-
         let contents: [URL]
         do {
             contents = try fileManager.contentsOfDirectory(
@@ -113,6 +107,18 @@ actor ScanningEngine {
 
         for itemURL in contents {
             try Task.checkCancellation()
+
+            // Intercept TCC-protected directories before touching them at all
+            // (resourceValues or contentsOfDirectory could trigger TCC popups)
+            if skipTCC && isTCCProtected(url: itemURL) {
+                let childNode = FileNode(url: itemURL, name: itemURL.lastPathComponent, isDirectory: true)
+                childNode.parent = node
+                childNode.awaitingPermission = true
+                pendingDirectories.append(childNode)
+                node.children.append(childNode)
+                directoriesScanned += 1
+                continue
+            }
 
             let resourceValues: URLResourceValues
             do {
