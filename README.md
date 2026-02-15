@@ -63,7 +63,9 @@ See `PROMPT-DEV.md` for the concept walkthrough.
 
 ## Download
 
-[Download DiskCleaner v0.9.0](https://github.com/ljack/macos-disk-cleaner/releases/download/v0.9.0/DiskCleaner-v0.9.0.dmg)
+[Download DiskCleaner v0.9.1](https://github.com/ljack/macos-disk-cleaner/releases/download/v0.9.1/DiskCleaner-v0.9.1.dmg) (signed + notarized)
+
+[All releases](https://github.com/ljack/macos-disk-cleaner/releases)
 
 ## Screenshot
 
