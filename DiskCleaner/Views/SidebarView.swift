@@ -59,6 +59,23 @@ struct SidebarView: View {
                 }
             }
 
+            Section("Scan Rules") {
+                Label {
+                    HStack {
+                        Text("Auto Exclusions")
+                        Spacer()
+                        Text("\(appVM.activeExclusionRuleCount)/\(appVM.exclusionRules.count)")
+                            .font(.caption)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.fill.tertiary, in: Capsule())
+                    }
+                } icon: {
+                    Image(systemName: "minus.circle")
+                }
+                .tag(SidebarItem.exclusions)
+            }
+
             if appVM.hasHiddenNodes {
                 Section("Hidden") {
                     Label {

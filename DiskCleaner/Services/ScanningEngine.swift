@@ -29,6 +29,8 @@ actor ScanningEngine {
 
     private var homeURL: URL?
     private var pendingDirectories: [FileNode] = []
+    private var exclusionRulesByPath: [String: UUID] = [:]
+    private var matchedExclusionRuleIDs: Set<UUID> = []
 
     /// Check if a URL is a TCC-protected directory (direct child of home).
     /// Uses path comparison to avoid URL canonicalization mismatches.
@@ -43,13 +45,20 @@ actor ScanningEngine {
     func scan(
         root: URL,
         homeURL: URL,
+        exclusionRules: [ScanExclusionRule],
         onProgress: @MainActor @escaping (ScanProgress) -> Void
-    ) async throws -> (root: FileNode, pendingDirectories: [FileNode]) {
+    ) async throws -> (
+        root: FileNode,
+        pendingDirectories: [FileNode],
+        matchedExclusionRuleIDs: Set<UUID>
+    ) {
         filesScanned = 0
         directoriesScanned = 0
         bytesScanned = 0
         self.homeURL = homeURL
         pendingDirectories = []
+        exclusionRulesByPath = Dictionary(uniqueKeysWithValues: exclusionRules.map { ($0.normalizedPath, $0.id) })
+        matchedExclusionRuleIDs = []
 
         let rootNode = try await scanDirectory(url: root, parent: nil, skipTCC: true, onProgress: onProgress)
         rootNode.finalizeTree()
@@ -62,7 +71,11 @@ actor ScanningEngine {
             bytesScanned: bytesScanned
         ))
 
-        return (root: rootNode, pendingDirectories: pendingDirectories)
+        return (
+            root: rootNode,
+            pendingDirectories: pendingDirectories,
+            matchedExclusionRuleIDs: matchedExclusionRuleIDs
+        )
     }
 
     /// Scan a single directory subtree (used after user grants TCC permission).
@@ -74,6 +87,8 @@ actor ScanningEngine {
         filesScanned = 0
         directoriesScanned = 0
         bytesScanned = 0
+        exclusionRulesByPath = [:]
+        matchedExclusionRuleIDs = []
 
         let node = try await scanDirectory(url: url, parent: nil, skipTCC: false, onProgress: onProgress)
         node.finalizeTree()
@@ -91,6 +106,12 @@ actor ScanningEngine {
         let node = FileNode(url: url, name: url.lastPathComponent, isDirectory: true)
         node.parent = parent
         directoriesScanned += 1
+
+        if let matchedRuleID = exclusionRulesByPath[url.standardizedFileURL.path] {
+            node.excludedByRuleID = matchedRuleID
+            matchedExclusionRuleIDs.insert(matchedRuleID)
+            return node
+        }
 
         let contents: [URL]
         do {
@@ -115,6 +136,16 @@ actor ScanningEngine {
                 childNode.parent = node
                 childNode.awaitingPermission = true
                 pendingDirectories.append(childNode)
+                node.children.append(childNode)
+                directoriesScanned += 1
+                continue
+            }
+
+            if let matchedRuleID = exclusionRulesByPath[itemURL.standardizedFileURL.path] {
+                let childNode = FileNode(url: itemURL, name: itemURL.lastPathComponent, isDirectory: true)
+                childNode.parent = node
+                childNode.excludedByRuleID = matchedRuleID
+                matchedExclusionRuleIDs.insert(matchedRuleID)
                 node.children.append(childNode)
                 directoriesScanned += 1
                 continue

@@ -18,6 +18,7 @@ enum ViewMode: String, CaseIterable {
 enum SidebarItem: Hashable {
     case disk
     case permissions
+    case exclusions
     case apps
     case hiddenItems
     case history
@@ -33,6 +34,7 @@ final class AppViewModel {
     let uninstallerVM = AppUninstallerViewModel()
     let deletionService = DeletionService()
     let diskSpaceHistory = DiskSpaceHistory()
+    let exclusionStore = DirectoryExclusionStore()
 
     var accessMode: DiskAccessMode = .userDirectory
     var viewMode: ViewMode = .list
@@ -62,6 +64,9 @@ final class AppViewModel {
 
     // Selection for deletion
     var selectedNodes: Set<FileNode> = []
+
+    // Post-scan permissions banner
+    var showPermissionsBanner = false
 
     // Disk space history popover
     var showingDiskSpaceHistory = false
@@ -193,7 +198,11 @@ final class AppViewModel {
         treemapRoot = nil
         selectedNodes.removeAll()
         hiddenNodes.removeAll()
-        scanVM.startScan(mode: accessMode)
+        showPermissionsBanner = false
+        scanVM.startScan(
+            mode: accessMode,
+            exclusionRules: exclusionStore.activeScanRules(for: accessMode)
+        )
     }
 
     func stopScan() {
@@ -202,8 +211,47 @@ final class AppViewModel {
 
     /// Called when scan completes — trigger suggestions detection
     func onScanComplete() {
+        if let result = scanVM.scanResult {
+            exclusionStore.consumeMatchedRules(result.matchedExclusionRuleIDs)
+        }
         suggestionsVM.detect(scanRoot: scanVM.rootNode)
         refreshDiskSpace()
+        showPermissionsBanner = hasRestrictedDirectories
+    }
+
+    // MARK: - Auto Exclusions
+
+    var exclusionRules: [ExcludedDirectoryRule] {
+        exclusionStore.rules
+    }
+
+    var activeExclusionRuleCount: Int {
+        exclusionStore.activeRuleCount
+    }
+
+    func exclusionRule(for id: UUID?) -> ExcludedDirectoryRule? {
+        exclusionStore.rule(by: id)
+    }
+
+    func addExclusionRule(for node: FileNode, remainingScans: Int, scope: ExclusionRuleScope) {
+        guard node.isDirectory else { return }
+        exclusionStore.upsertRule(for: node.url, remainingScans: remainingScans, scope: scope)
+    }
+
+    func addExclusionRule(for directoryURL: URL, remainingScans: Int, scope: ExclusionRuleScope) {
+        exclusionStore.upsertRule(for: directoryURL, remainingScans: remainingScans, scope: scope)
+    }
+
+    func removeExclusionRule(id: UUID) {
+        exclusionStore.removeRule(id: id)
+    }
+
+    func setExclusionRuleRemainingScans(id: UUID, to newValue: Int) {
+        exclusionStore.setRemainingScans(for: id, to: newValue)
+    }
+
+    func openExclusionsManager() {
+        selectedSidebarItem = .exclusions
     }
 
     // MARK: - Directory Permissions

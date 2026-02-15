@@ -33,6 +33,8 @@ struct MainWindowView: View {
         switch appVM.selectedSidebarItem {
         case .permissions:
             PermissionsView()
+        case .exclusions:
+            ExclusionsView()
         case .hiddenItems:
             HiddenItemsView()
         case .apps:
@@ -47,16 +49,51 @@ struct MainWindowView: View {
     }
 
     @ViewBuilder
+    private var permissionsBanner: some View {
+        if appVM.showPermissionsBanner {
+            let count = appVM.scanVM.restrictedDirectories.count
+            HStack(spacing: 8) {
+                Image(systemName: "shield.lefthalf.filled")
+                    .foregroundStyle(.orange)
+                Text("\(count) \(count == 1 ? "directory was" : "directories were") skipped")
+                    .fontWeight(.medium)
+                Text("— Grant access to include them in results")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Review") {
+                    appVM.selectedSidebarItem = .permissions
+                    appVM.showPermissionsBanner = false
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                Button {
+                    appVM.showPermissionsBanner = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.orange.opacity(0.1))
+        }
+    }
+
+    @ViewBuilder
     private var diskContent: some View {
         let hasResults = appVM.scanVM.rootNode != nil
 
         if hasResults {
-            switch appVM.viewMode {
-            case .list:
-                FileTreeView(root: appVM.scanVM.rootNode!)
-            case .treemap:
-                if let root = appVM.displayedRoot {
-                    TreemapContainerView(root: root)
+            VStack(spacing: 0) {
+                permissionsBanner
+                switch appVM.viewMode {
+                case .list:
+                    FileTreeView(root: appVM.scanVM.rootNode!)
+                case .treemap:
+                    if let root = appVM.displayedRoot {
+                        TreemapContainerView(root: root)
+                    }
                 }
             }
         } else {

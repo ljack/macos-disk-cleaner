@@ -106,7 +106,7 @@ final class ScanViewModel {
         }
     }
 
-    func startScan(mode: DiskAccessMode) {
+    func startScan(mode: DiskAccessMode, exclusionRules: [ScanExclusionRule]) {
         guard !isScanning else { return }
 
         isScanning = true
@@ -122,7 +122,11 @@ final class ScanViewModel {
 
         scanTask = Task {
             do {
-                let result = try await engine.scan(root: rootURL, homeURL: homeURL) { progress in
+                let result = try await engine.scan(
+                    root: rootURL,
+                    homeURL: homeURL,
+                    exclusionRules: exclusionRules
+                ) { progress in
                     self.progress = progress
                 }
 
@@ -134,7 +138,8 @@ final class ScanViewModel {
                     duration: duration,
                     totalFiles: self.progress?.filesScanned ?? 0,
                     totalDirectories: self.progress?.directoriesScanned ?? 0,
-                    accessMode: mode
+                    accessMode: mode,
+                    matchedExclusionRuleIDs: result.matchedExclusionRuleIDs
                 )
                 self.isScanning = false
             } catch is CancellationError {
@@ -165,6 +170,7 @@ final class ScanViewModel {
                 node.isPermissionDenied = false
                 node.finalizeTree()
                 node.parent?.recalculateSizeUpward()
+                node.parent?.children.sort { $0.size > $1.size }
 
                 // Remove from restricted list
                 self.restrictedDirectories.removeAll { $0.id == node.id }

@@ -7,46 +7,46 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000010000000000000001 /* DiskCleanerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001; };
-		A10000010000000000000002 /* FileNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002; };
-		A10000010000000000000003 /* ScanResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003; };
-		A10000010000000000000004 /* SpaceWaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004; };
-		A10000010000000000000005 /* DiskAccessMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005; };
-		A10000010000000000000006 /* ScanningEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006; };
-		A10000010000000000000007 /* SuggestionsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007; };
-		A10000010000000000000008 /* DeletionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008; };
-		A10000010000000000000009 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009; };
-		A10000010000000000000010 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000010; };
-		A10000010000000000000011 /* ScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011; };
-		A10000010000000000000012 /* SuggestionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012; };
-		A10000010000000000000013 /* MainWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013; };
-		A10000010000000000000014 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014; };
-		A10000010000000000000015 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015; };
-		A10000010000000000000016 /* FileTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016; };
-		A10000010000000000000017 /* FileTreeRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000017; };
-		A10000010000000000000018 /* TreemapContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000018; };
-		A10000010000000000000019 /* TreemapCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019; };
-		A10000010000000000000020 /* SuggestionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000020; };
-		A10000010000000000000021 /* ConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000021; };
-		A10000010000000000000022 /* ProgressOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000022; };
-		A10000010000000000000023 /* SquarifiedTreemap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000023; };
-		A10000010000000000000024 /* FileTypeClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024; };
-		A10000010000000000000025 /* URLExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025; };
-		A10000010000000000000026 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000026; };
-		A10000010000000000000027 /* ScanButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000028; };
-		A10000010000000000000030 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000030; };
-		A10000010000000000000031 /* AppDiscoveryEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031; };
-		A10000010000000000000032 /* AppUninstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032; };
-		A10000010000000000000033 /* AppListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033; };
-		A10000010000000000000034 /* AppDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034; };
-		A10000010000000000000035 /* UninstallConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035; };
-		A10000010000000000000036 /* TrashedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036; };
-		A10000010000000000000037 /* TrashHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000037; };
-		A10000010000000000000038 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000038; };
-		A10000010000000000000039 /* HiddenItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000039; };
-		A10000010000000000000040 /* DiskSpaceSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000040; };
-		A10000010000000000000041 /* DiskSpaceHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000041; };
-		A10000010000000000000042 /* DiskSpaceHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000042; };
+		A10000010000000000000001 /* DiskCleanerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* DiskCleanerApp.swift */; };
+		A10000010000000000000002 /* FileNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* FileNode.swift */; };
+		A10000010000000000000003 /* ScanResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* ScanResult.swift */; };
+		A10000010000000000000004 /* SpaceWaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* SpaceWaster.swift */; };
+		A10000010000000000000005 /* DiskAccessMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* DiskAccessMode.swift */; };
+		A10000010000000000000006 /* ScanningEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* ScanningEngine.swift */; };
+		A10000010000000000000007 /* SuggestionsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* SuggestionsEngine.swift */; };
+		A10000010000000000000008 /* DeletionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* DeletionService.swift */; };
+		A10000010000000000000009 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* PermissionService.swift */; };
+		A10000010000000000000010 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000010 /* AppViewModel.swift */; };
+		A10000010000000000000011 /* ScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* ScanViewModel.swift */; };
+		A10000010000000000000012 /* SuggestionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* SuggestionsViewModel.swift */; };
+		A10000010000000000000013 /* MainWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* MainWindowView.swift */; };
+		A10000010000000000000014 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014 /* ToolbarView.swift */; };
+		A10000010000000000000015 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015 /* SidebarView.swift */; };
+		A10000010000000000000016 /* FileTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* FileTreeView.swift */; };
+		A10000010000000000000017 /* FileTreeRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000017 /* FileTreeRowView.swift */; };
+		A10000010000000000000018 /* TreemapContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000018 /* TreemapContainerView.swift */; };
+		A10000010000000000000019 /* TreemapCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* TreemapCanvasView.swift */; };
+		A10000010000000000000020 /* SuggestionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000020 /* SuggestionsListView.swift */; };
+		A10000010000000000000021 /* ConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000021 /* ConfirmationSheet.swift */; };
+		A10000010000000000000022 /* ProgressOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000022 /* ProgressOverlayView.swift */; };
+		A10000010000000000000023 /* SquarifiedTreemap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000023 /* SquarifiedTreemap.swift */; };
+		A10000010000000000000024 /* FileTypeClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024 /* FileTypeClassifier.swift */; };
+		A10000010000000000000025 /* URLExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025 /* URLExtensions.swift */; };
+		A10000010000000000000026 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000026 /* Assets.xcassets */; };
+		A10000010000000000000027 /* ScanButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000028 /* ScanButtonView.swift */; };
+		A10000010000000000000030 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000030 /* InstalledApp.swift */; };
+		A10000010000000000000031 /* AppDiscoveryEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031 /* AppDiscoveryEngine.swift */; };
+		A10000010000000000000032 /* AppUninstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032 /* AppUninstallerViewModel.swift */; };
+		A10000010000000000000033 /* AppListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* AppListView.swift */; };
+		A10000010000000000000034 /* AppDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* AppDetailView.swift */; };
+		A10000010000000000000035 /* UninstallConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* UninstallConfirmationSheet.swift */; };
+		A10000010000000000000036 /* TrashedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* TrashedItem.swift */; };
+		A10000010000000000000037 /* TrashHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000037 /* TrashHistoryView.swift */; };
+		A10000010000000000000038 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000038 /* PermissionsView.swift */; };
+		A10000010000000000000039 /* HiddenItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000039 /* HiddenItemsView.swift */; };
+		A10000010000000000000040 /* DiskSpaceSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000040 /* DiskSpaceSnapshot.swift */; };
+		A10000010000000000000041 /* DiskSpaceHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000041 /* DiskSpaceHistory.swift */; };
+		A10000010000000000000042 /* DiskSpaceHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000042 /* DiskSpaceHistoryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -105,20 +105,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A50000010000000000000001 /* Root */ = {
+		A50000010000000000000001 = {
 			isa = PBXGroup;
 			children = (
 				A50000010000000000000002 /* DiskCleaner */,
 				A50000010000000000000099 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		A50000010000000000000099 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				A30000010000000000000001 /* DiskCleaner.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		A50000010000000000000002 /* DiskCleaner */ = {
@@ -216,16 +208,6 @@
 			path = Suggestions;
 			sourceTree = "<group>";
 		};
-		A50000010000000000000013 /* Apps */ = {
-			isa = PBXGroup;
-			children = (
-				A20000010000000000000033 /* AppListView.swift */,
-				A20000010000000000000034 /* AppDetailView.swift */,
-				A20000010000000000000035 /* UninstallConfirmationSheet.swift */,
-			);
-			path = Apps;
-			sourceTree = "<group>";
-		};
 		A50000010000000000000010 /* Algorithms */ = {
 			isa = PBXGroup;
 			children = (
@@ -255,6 +237,24 @@
 				A20000010000000000000042 /* DiskSpaceHistoryView.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		A50000010000000000000013 /* Apps */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000033 /* AppListView.swift */,
+				A20000010000000000000034 /* AppDetailView.swift */,
+				A20000010000000000000035 /* UninstallConfirmationSheet.swift */,
+			);
+			path = Apps;
+			sourceTree = "<group>";
+		};
+		A50000010000000000000099 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A30000010000000000000001 /* DiskCleaner.app */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -300,7 +300,7 @@
 				en,
 				Base,
 			);
-			mainGroup = A50000010000000000000001 /* Root */;
+			mainGroup = A50000010000000000000001;
 			productRefGroup = A50000010000000000000099 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -512,7 +512,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -539,7 +539,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -565,7 +565,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = A90000010000000000000001 /* Project object */;
 }

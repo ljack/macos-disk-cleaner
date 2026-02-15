@@ -17,6 +17,9 @@ final class FileNode: Identifiable {
     /// True if this is a TCC-protected directory that was skipped during scan
     var awaitingPermission: Bool = false
 
+    /// If non-nil, this directory was skipped by an active exclusion rule.
+    var excludedByRuleID: UUID?
+
     /// Number of descendants (files + directories) in subtree
     var descendantCount: Int = 0
 

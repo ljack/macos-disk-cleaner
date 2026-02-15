@@ -97,3 +97,102 @@ final class DiskSpaceHistory {
         }
     }
 }
+
+/// Persists temporary directory-exclusion rules used to skip subtrees during scan.
+@MainActor
+@Observable
+final class DirectoryExclusionStore {
+    private static let defaultsKey = "directoryExclusionRules"
+
+    private(set) var rules: [ExcludedDirectoryRule] = []
+
+    init() {
+        load()
+    }
+
+    var activeRuleCount: Int {
+        rules.filter(\.isActive).count
+    }
+
+    func rule(by id: UUID?) -> ExcludedDirectoryRule? {
+        guard let id else { return nil }
+        return rules.first { $0.id == id }
+    }
+
+    func upsertRule(for directoryURL: URL, remainingScans: Int, scope: ExclusionRuleScope) {
+        let normalizedPath = Self.normalizePath(directoryURL)
+        guard !normalizedPath.isEmpty else { return }
+
+        if let index = rules.firstIndex(where: {
+            $0.normalizedPath == normalizedPath && $0.scope == scope
+        }) {
+            rules[index].remainingScans = max(0, remainingScans)
+        } else {
+            let rule = ExcludedDirectoryRule(
+                path: normalizedPath,
+                remainingScans: remainingScans,
+                scope: scope
+            )
+            rules.append(rule)
+        }
+        save()
+    }
+
+    func upsertRule(path: String, remainingScans: Int, scope: ExclusionRuleScope) {
+        upsertRule(for: URL(fileURLWithPath: path), remainingScans: remainingScans, scope: scope)
+    }
+
+    func removeRule(id: UUID) {
+        rules.removeAll { $0.id == id }
+        save()
+    }
+
+    func setRemainingScans(for id: UUID, to newValue: Int) {
+        guard let index = rules.firstIndex(where: { $0.id == id }) else { return }
+        rules[index].remainingScans = max(0, newValue)
+        save()
+    }
+
+    func activeScanRules(for mode: DiskAccessMode) -> [ScanExclusionRule] {
+        rules
+            .filter { $0.isActive && $0.scope.applies(to: mode) }
+            .map { ScanExclusionRule(id: $0.id, normalizedPath: $0.normalizedPath) }
+    }
+
+    /// Consume one count for each rule that was encountered in a successful scan.
+    func consumeMatchedRules(_ matchedRuleIDs: Set<UUID>) {
+        guard !matchedRuleIDs.isEmpty else { return }
+
+        let now = Date()
+        var changed = false
+
+        for index in rules.indices {
+            guard matchedRuleIDs.contains(rules[index].id) else { continue }
+            guard rules[index].remainingScans > 0 else { continue }
+
+            rules[index].remainingScans -= 1
+            rules[index].totalMatches += 1
+            rules[index].lastMatchedAt = now
+            changed = true
+        }
+
+        if changed {
+            save()
+        }
+    }
+
+    private func load() {
+        guard let data = UserDefaults.standard.data(forKey: Self.defaultsKey),
+              let decoded = try? JSONDecoder().decode([ExcludedDirectoryRule].self, from: data) else { return }
+        rules = decoded
+    }
+
+    private func save() {
+        guard let data = try? JSONEncoder().encode(rules) else { return }
+        UserDefaults.standard.set(data, forKey: Self.defaultsKey)
+    }
+
+    private static func normalizePath(_ url: URL) -> String {
+        url.standardizedFileURL.path
+    }
+}

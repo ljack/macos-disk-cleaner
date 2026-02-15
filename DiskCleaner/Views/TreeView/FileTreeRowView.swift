@@ -55,6 +55,28 @@ struct FileTreeRowView: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+            } else if let ruleID = node.excludedByRuleID {
+                // Auto-excluded state: subtree intentionally skipped for this scan
+                Image(systemName: "minus.circle.fill")
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(.orange)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(node.name)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Text(exclusionSubtitle(ruleID: ruleID))
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
+
+                Spacer()
+
+                Button("Manage") {
+                    appVM.openExclusionsManager()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             } else {
                 // Normal state
                 Toggle(isOn: Binding(
@@ -112,6 +134,30 @@ struct FileTreeRowView: View {
                 } label: {
                     Label("Restore", systemImage: "arrow.uturn.backward")
                 }
+            } else if let ruleID = node.excludedByRuleID {
+                if let rule = appVM.exclusionRule(for: ruleID) {
+                    Button {
+                        appVM.setExclusionRuleRemainingScans(id: rule.id, to: 0)
+                    } label: {
+                        Label("Disable Exclusion", systemImage: "pause.circle")
+                    }
+                    Button {
+                        appVM.removeExclusionRule(id: rule.id)
+                    } label: {
+                        Label("Remove Exclusion Rule", systemImage: "trash")
+                    }
+                }
+                Button {
+                    appVM.openExclusionsManager()
+                } label: {
+                    Label("Manage Exclusions", systemImage: "slider.horizontal.3")
+                }
+                Divider()
+                Button {
+                    appVM.revealInFinder(node)
+                } label: {
+                    Label("Reveal in Finder", systemImage: "finder")
+                }
             } else if node.isPermissionDenied {
                 Button {
                     appVM.retryDeniedDirectory(node)
@@ -129,12 +175,88 @@ struct FileTreeRowView: View {
                 } label: {
                     Label("Uninstall \(node.url.deletingPathExtension().lastPathComponent)...", systemImage: "trash")
                 }
+                Menu("Auto-Exclude Directory") {
+                    Button("1 scan (\(appVM.accessMode.rawValue))") {
+                        appVM.addExclusionRule(
+                            for: node,
+                            remainingScans: 1,
+                            scope: ExclusionRuleScope.currentMode(appVM.accessMode)
+                        )
+                    }
+                    Button("3 scans (\(appVM.accessMode.rawValue))") {
+                        appVM.addExclusionRule(
+                            for: node,
+                            remainingScans: 3,
+                            scope: ExclusionRuleScope.currentMode(appVM.accessMode)
+                        )
+                    }
+                    Button("5 scans (\(appVM.accessMode.rawValue))") {
+                        appVM.addExclusionRule(
+                            for: node,
+                            remainingScans: 5,
+                            scope: ExclusionRuleScope.currentMode(appVM.accessMode)
+                        )
+                    }
+                    Divider()
+                    Button("1 scan (All Scan Modes)") {
+                        appVM.addExclusionRule(for: node, remainingScans: 1, scope: .allModes)
+                    }
+                    Button("3 scans (All Scan Modes)") {
+                        appVM.addExclusionRule(for: node, remainingScans: 3, scope: .allModes)
+                    }
+                    Button("5 scans (All Scan Modes)") {
+                        appVM.addExclusionRule(for: node, remainingScans: 5, scope: .allModes)
+                    }
+                    Divider()
+                    Button("Manage Exclusions…") {
+                        appVM.openExclusionsManager()
+                    }
+                }
                 Button {
                     appVM.hideNode(node)
                 } label: {
                     Label("Hide from Results", systemImage: "eye.slash")
                 }
             } else if !node.awaitingPermission {
+                if node.isDirectory {
+                    Menu("Auto-Exclude Directory") {
+                        Button("1 scan (\(appVM.accessMode.rawValue))") {
+                            appVM.addExclusionRule(
+                                for: node,
+                                remainingScans: 1,
+                                scope: ExclusionRuleScope.currentMode(appVM.accessMode)
+                            )
+                        }
+                        Button("3 scans (\(appVM.accessMode.rawValue))") {
+                            appVM.addExclusionRule(
+                                for: node,
+                                remainingScans: 3,
+                                scope: ExclusionRuleScope.currentMode(appVM.accessMode)
+                            )
+                        }
+                        Button("5 scans (\(appVM.accessMode.rawValue))") {
+                            appVM.addExclusionRule(
+                                for: node,
+                                remainingScans: 5,
+                                scope: ExclusionRuleScope.currentMode(appVM.accessMode)
+                            )
+                        }
+                        Divider()
+                        Button("1 scan (All Scan Modes)") {
+                            appVM.addExclusionRule(for: node, remainingScans: 1, scope: .allModes)
+                        }
+                        Button("3 scans (All Scan Modes)") {
+                            appVM.addExclusionRule(for: node, remainingScans: 3, scope: .allModes)
+                        }
+                        Button("5 scans (All Scan Modes)") {
+                            appVM.addExclusionRule(for: node, remainingScans: 5, scope: .allModes)
+                        }
+                        Divider()
+                        Button("Manage Exclusions…") {
+                            appVM.openExclusionsManager()
+                        }
+                    }
+                }
                 Button {
                     appVM.hideNode(node)
                 } label: {
@@ -176,5 +298,15 @@ struct FileTreeRowView: View {
         if fraction > 0.5 { return .red }
         if fraction > 0.2 { return .orange }
         return .blue
+    }
+
+    private func exclusionSubtitle(ruleID: UUID) -> String {
+        guard let rule = appVM.exclusionRule(for: ruleID) else {
+            return "Excluded by rule"
+        }
+        if rule.remainingScans > 0 {
+            return "Excluded • \(rule.remainingScans) scan\(rule.remainingScans == 1 ? "" : "s") left"
+        }
+        return "Excluded • rule inactive"
     }
 }
