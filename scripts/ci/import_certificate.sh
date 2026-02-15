@@ -19,8 +19,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Decode certificate
-echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > "$CERT_FILE"
+# Decode certificate (printf avoids echo interpreting escape sequences;
+# -D is the BSD/macOS base64 decode flag)
+printf '%s' "$APPLE_CERTIFICATE_BASE64" | base64 -D > "$CERT_FILE"
 
 # Create and configure temporary keychain
 security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
