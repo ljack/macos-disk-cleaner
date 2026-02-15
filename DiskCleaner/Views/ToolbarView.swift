@@ -44,26 +44,32 @@ struct ToolbarView: ToolbarContent {
             }
         }
 
-        // Disk space bar
+        // Disk space bar (click to refresh)
         ToolbarItem(placement: .status) {
             if let info = appVM.diskSpaceInfo {
-                HStack(spacing: 6) {
-                    GeometryReader { geo in
-                        let usedFraction = CGFloat(info.used) / CGFloat(info.total)
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(.quaternary)
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(usedFraction > 0.9 ? .red : .blue)
-                                .frame(width: geo.size.width * usedFraction)
+                Button {
+                    appVM.refreshDiskSpace()
+                } label: {
+                    HStack(spacing: 6) {
+                        GeometryReader { geo in
+                            let usedFraction = CGFloat(info.used) / CGFloat(info.total)
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(.quaternary)
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(usedFraction > 0.9 ? .red : .blue)
+                                    .frame(width: geo.size.width * usedFraction)
+                            }
                         }
-                    }
-                    .frame(width: 80, height: 8)
+                        .frame(width: 80, height: 8)
 
-                    Text("\(ByteCountFormatter.string(fromByteCount: info.free, countStyle: .file)) free")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        Text("\(ByteCountFormatter.string(fromByteCount: info.free, countStyle: .file)) free")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .buttonStyle(.plain)
+                .help("Click to refresh disk space")
             }
         }
     }

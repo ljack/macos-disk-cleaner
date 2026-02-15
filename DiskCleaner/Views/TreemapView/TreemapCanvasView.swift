@@ -34,8 +34,12 @@ struct TreemapCanvasView: View {
                 }
             }
             .onTapGesture(count: 2) { location in
-                if let rect = hitTest(location), rect.node.isDirectory {
-                    appVM.zoomIntoNode(rect.node)
+                if let rect = hitTest(location) {
+                    if rect.node.isDirectory {
+                        appVM.zoomIntoNode(rect.node)
+                    } else {
+                        appVM.revealInFinder(rect.node)
+                    }
                 }
             }
             .overlay(alignment: .topLeading) {
@@ -118,6 +122,10 @@ struct TreemapCanvasView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 Text("Double-click to zoom in")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            } else {
+                Text("Double-click to reveal in Finder")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }

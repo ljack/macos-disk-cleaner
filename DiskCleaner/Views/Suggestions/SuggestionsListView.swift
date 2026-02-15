@@ -52,6 +52,15 @@ struct SuggestionsListView: View {
                             .font(.callout.monospacedDigit())
                             .foregroundStyle(.secondary)
 
+                        Button {
+                            appVM.navigateToDirectory(url: suggestion.url)
+                        } label: {
+                            Image(systemName: "arrow.right.circle")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .help("Explore in disk view")
+
                         Button("Clean") {
                             appVM.deleteSuggestion(suggestion)
                         }
