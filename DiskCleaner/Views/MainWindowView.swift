@@ -33,6 +33,8 @@ struct MainWindowView: View {
         switch appVM.selectedSidebarItem {
         case .apps:
             AppListView()
+        case .history:
+            TrashHistoryView()
         case .suggestion(let category):
             SuggestionsListView(category: category)
         case .disk, nil:

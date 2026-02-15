@@ -59,6 +59,16 @@ final class AppUninstallerViewModel {
         }
     }
 
+    /// Build an InstalledApp from a bundle URL and request uninstall
+    func requestUninstallFromTree(bundleURL: URL) {
+        Task {
+            guard let app = await engine.buildApp(from: bundleURL) else { return }
+            await MainActor.run {
+                self.requestUninstall(app)
+            }
+        }
+    }
+
     /// Request uninstall for an app (shows confirmation)
     func requestUninstall(_ app: InstalledApp) {
         appToUninstall = app
@@ -67,7 +77,7 @@ final class AppUninstallerViewModel {
     }
 
     /// Perform the uninstall using the shared DeletionService
-    func performUninstall(using deletionService: DeletionService) {
+    func performUninstall(using deletionService: DeletionService, onComplete: (@MainActor (_ originalURLs: [URL], _ trashedURLs: [URL], _ app: InstalledApp) -> Void)? = nil) {
         guard let app = appToUninstall else { return }
         isUninstalling = true
         uninstallError = nil
@@ -78,7 +88,7 @@ final class AppUninstallerViewModel {
                 var urls = [app.bundleURL]
                 urls.append(contentsOf: app.associatedFiles.map(\.url))
 
-                _ = try await deletionService.moveToTrash(urls: urls)
+                let trashedURLs = try await deletionService.moveToTrash(urls: urls)
 
                 await MainActor.run {
                     self.apps.removeAll { $0.id == app.id }
@@ -88,6 +98,7 @@ final class AppUninstallerViewModel {
                     self.isUninstalling = false
                     self.showingUninstallConfirmation = false
                     self.appToUninstall = nil
+                    onComplete?(urls, trashedURLs, app)
                 }
             } catch {
                 await MainActor.run {

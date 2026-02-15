@@ -34,7 +34,7 @@ actor AppDiscoveryEngine {
     }
 
     /// Build an InstalledApp from a .app bundle URL.
-    private func buildApp(from bundleURL: URL) async -> InstalledApp? {
+    func buildApp(from bundleURL: URL) async -> InstalledApp? {
         let name = bundleURL.deletingPathExtension().lastPathComponent
         let bundle = Bundle(url: bundleURL)
         let bundleIdentifier = bundle?.bundleIdentifier

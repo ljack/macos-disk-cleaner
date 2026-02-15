@@ -6,53 +6,93 @@ struct FileTreeRowView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            // Selection checkbox
-            Toggle(isOn: Binding(
-                get: { appVM.selectedNodes.contains(node) },
-                set: { selected in
-                    if selected {
-                        appVM.selectedNodes.insert(node)
-                    } else {
-                        appVM.selectedNodes.remove(node)
+            if node.isTrashed {
+                // Trashed state: restore icon + dimmed name + restore button
+                Image(systemName: "arrow.uturn.backward.circle")
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("~\(node.name)")
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .foregroundStyle(.secondary)
+                        .opacity(0.4)
+                }
+
+                Spacer()
+
+                Button("Restore") {
+                    appVM.restoreNodeFromTrash(node)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+
+                Text(ByteCountFormatter.string(fromByteCount: node.size, countStyle: .file))
+                    .font(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 70, alignment: .trailing)
+            } else {
+                // Normal state
+                Toggle(isOn: Binding(
+                    get: { appVM.selectedNodes.contains(node) },
+                    set: { selected in
+                        if selected {
+                            appVM.selectedNodes.insert(node)
+                        } else {
+                            appVM.selectedNodes.remove(node)
+                        }
+                    }
+                )) {
+                    EmptyView()
+                }
+                .toggleStyle(.checkbox)
+                .labelsHidden()
+
+                fileIcon
+                    .frame(width: 16, height: 16)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(node.name)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    if node.isDirectory && node.descendantCount > 0 {
+                        Text("\(node.descendantCount) items")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
                     }
                 }
-            )) {
-                EmptyView()
+
+                Spacer()
+
+                sizeBar
+                    .frame(width: 80, height: 12)
+
+                Text(node.formattedSize)
+                    .font(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .frame(width: 70, alignment: .trailing)
             }
-            .toggleStyle(.checkbox)
-            .labelsHidden()
-
-            // File icon
-            fileIcon
-                .frame(width: 16, height: 16)
-
-            // Name
-            VStack(alignment: .leading, spacing: 1) {
-                Text(node.name)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-
-                if node.isDirectory && node.descendantCount > 0 {
-                    Text("\(node.descendantCount) items")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            Spacer()
-
-            // Size bar
-            sizeBar
-                .frame(width: 80, height: 12)
-
-            // Size label
-            Text(node.formattedSize)
-                .font(.caption)
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
-                .frame(width: 70, alignment: .trailing)
         }
         .padding(.vertical, 2)
+        .contextMenu {
+            if node.isTrashed {
+                Button {
+                    appVM.restoreNodeFromTrash(node)
+                } label: {
+                    Label("Restore", systemImage: "arrow.uturn.backward")
+                }
+            } else if node.url.pathExtension == "app" {
+                Button {
+                    appVM.uninstallerVM.requestUninstallFromTree(bundleURL: node.url)
+                } label: {
+                    Label("Uninstall \(node.url.deletingPathExtension().lastPathComponent)...", systemImage: "trash")
+                }
+            }
+        }
     }
 
     @ViewBuilder

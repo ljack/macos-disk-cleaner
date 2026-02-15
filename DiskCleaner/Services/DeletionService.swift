@@ -22,10 +22,23 @@ actor DeletionService {
         }
     }
 
-    /// Move a single URL to Trash
-    func moveToTrash(url: URL) async throws {
+    /// Move a single URL to Trash. Returns the Trash URL.
+    @discardableResult
+    func moveToTrash(url: URL) async throws -> URL {
         try await MainActor.run {
-            try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+            var resultURL: NSURL?
+            try FileManager.default.trashItem(at: url, resultingItemURL: &resultURL)
+            return (resultURL as URL?) ?? url
+        }
+    }
+
+    /// Restore an item from Trash to its original location.
+    func restoreFromTrash(trashURL: URL, to originalURL: URL) async throws {
+        try await MainActor.run {
+            // Ensure parent directory exists
+            let parent = originalURL.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+            try FileManager.default.moveItem(at: trashURL, to: originalURL)
         }
     }
 }

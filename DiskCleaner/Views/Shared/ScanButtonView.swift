@@ -11,6 +11,10 @@ struct ScanButtonView: View {
         case hero      // Large for empty state
     }
 
+    @State private var countdown: Int = 0
+    @State private var countdownAborted = false
+    @State private var countdownTask: Task<Void, Never>?
+
     private var status: ScanStatus {
         appVM.scanVM.status
     }
@@ -50,6 +54,7 @@ struct ScanButtonView: View {
     private var heroButton: some View {
         VStack(spacing: 20) {
             Button {
+                abortCountdown()
                 handleTap()
             } label: {
                 VStack(spacing: 12) {
@@ -80,6 +85,35 @@ struct ScanButtonView: View {
                 }
             }
             .buttonStyle(.plain)
+
+            // Auto-scan countdown
+            if countdown > 0 && status == .readyToScan {
+                VStack(spacing: 8) {
+                    Text("Auto-scanning in \(countdown)s...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+
+                    Button("Cancel") {
+                        abortCountdown()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    if !appVM.autoScanEnabled {
+                        Button {
+                            appVM.autoScanEnabled = true
+                            appVM.autoScanDelay = 3
+                        } label: {
+                            Label("Enable auto-scan on launch", systemImage: "arrow.clockwise")
+                                .font(.caption2)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(Color.accentColor)
+                    }
+                }
+                .transition(.opacity)
+            }
 
             // Scanning progress inline
             if status == .scanning, let progress = appVM.scanVM.progress {
@@ -121,6 +155,40 @@ struct ScanButtonView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: status)
+        .onAppear {
+            startCountdown()
+        }
+        .onDisappear {
+            countdownTask?.cancel()
+        }
+    }
+
+    // MARK: - Countdown
+
+    private func startCountdown() {
+        guard status == .readyToScan, !countdownAborted else { return }
+        let delay = appVM.autoScanEnabled ? appVM.autoScanDelay : 30
+        guard delay > 0 else {
+            appVM.startScan()
+            return
+        }
+        countdown = delay
+        countdownTask = Task { @MainActor in
+            while countdown > 0 {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled, !countdownAborted else { return }
+                countdown -= 1
+            }
+            if !Task.isCancelled, !countdownAborted, status.canStartScan {
+                appVM.startScan()
+            }
+        }
+    }
+
+    private func abortCountdown() {
+        countdownAborted = true
+        countdownTask?.cancel()
+        countdown = 0
     }
 
     // MARK: - Shared logic

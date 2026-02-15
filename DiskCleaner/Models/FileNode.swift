@@ -17,6 +17,12 @@ final class FileNode: Identifiable {
     /// Number of descendants (files + directories) in subtree
     var descendantCount: Int = 0
 
+    /// True if this node has been moved to Trash
+    var isTrashed: Bool = false
+
+    /// The URL of this item in Trash (for restore)
+    var trashURL: URL?
+
     init(url: URL, name: String, isDirectory: Bool, size: Int64 = 0, children: [FileNode] = []) {
         self.url = url
         self.name = name
@@ -43,11 +49,29 @@ final class FileNode: Identifiable {
         recalculateSizeUpward()
     }
 
-    /// Recalculate this node's size and propagate to parent
+    /// Mark this node as trashed and recalculate parent sizes
+    func markAsTrashed(trashURL: URL) {
+        isTrashed = true
+        self.trashURL = trashURL
+        parent?.recalculateSizeUpward()
+    }
+
+    /// Unmark this node as trashed, re-read size from disk, and recalculate parent sizes
+    func unmarkTrashed() {
+        isTrashed = false
+        trashURL = nil
+        if !isDirectory {
+            size = url.fileSize
+        }
+        parent?.recalculateSizeUpward()
+    }
+
+    /// Recalculate this node's size and propagate to parent (excludes trashed children)
     func recalculateSizeUpward() {
         if isDirectory {
-            size = children.reduce(0) { $0 + $1.size }
-            descendantCount = children.reduce(0) { $0 + $1.descendantCount + 1 }
+            let activeChildren = children.filter { !$0.isTrashed }
+            size = activeChildren.reduce(0) { $0 + $1.size }
+            descendantCount = activeChildren.reduce(0) { $0 + $1.descendantCount + 1 }
         }
         parent?.recalculateSizeUpward()
     }
@@ -61,6 +85,28 @@ final class FileNode: Identifiable {
     var fractionOfParent: Double {
         guard let parent = parent, parent.size > 0 else { return 1.0 }
         return Double(size) / Double(parent.size)
+    }
+
+    /// Find a descendant node matching the given URL by walking the tree path.
+    func findNode(at targetURL: URL) -> FileNode? {
+        let targetPath = targetURL.standardizedFileURL.path
+        let ownPath = url.standardizedFileURL.path
+
+        // Exact match
+        if targetPath == ownPath { return self }
+
+        // Target must be under this node
+        guard targetPath.hasPrefix(ownPath + "/") || targetPath.hasPrefix(ownPath) else {
+            return nil
+        }
+
+        // Search children
+        for child in children {
+            if let found = child.findNode(at: targetURL) {
+                return found
+            }
+        }
+        return nil
     }
 }
 

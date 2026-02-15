@@ -7,6 +7,19 @@ struct SidebarView: View {
         @Bindable var appVM = appVM
 
         List(selection: $appVM.selectedSidebarItem) {
+            Section {
+                HStack(spacing: 8) {
+                    Image(nsImage: NSApplication.shared.applicationIconImage)
+                        .resizable()
+                        .frame(width: 28, height: 28)
+                    Text("DiskCleaner")
+                        .font(.headline)
+                }
+                .padding(.vertical, 2)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+            }
+
             Section("Disk") {
                 Label {
                     VStack(alignment: .leading) {
@@ -15,6 +28,9 @@ struct SidebarView: View {
                             Text(result.root.formattedSize)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                            Text(scanTimestamp(result))
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
                     }
                 } icon: {
@@ -93,6 +109,46 @@ struct SidebarView: View {
                     }
                 }
             }
+            Section("History") {
+                Label {
+                    HStack {
+                        Text("Trash History")
+                        Spacer()
+                        if !appVM.trashHistory.isEmpty {
+                            Text("\(appVM.trashHistory.count)")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.fill.tertiary, in: Capsule())
+                        }
+                    }
+                } icon: {
+                    Image(systemName: "clock.arrow.circlepath")
+                }
+                .tag(SidebarItem.history)
+            }
+
+            Section("Settings") {
+                Toggle("Auto-scan on launch", isOn: $appVM.autoScanEnabled)
+                    .font(.caption)
+
+                if appVM.autoScanEnabled {
+                    HStack {
+                        Text("Delay")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Picker("", selection: $appVM.autoScanDelay) {
+                            Text("0s").tag(0)
+                            Text("3s").tag(3)
+                            Text("5s").tag(5)
+                            Text("10s").tag(10)
+                        }
+                        .pickerStyle(.menu)
+                        .fixedSize()
+                    }
+                }
+            }
         }
         .listStyle(.sidebar)
         .navigationSplitViewColumnWidth(min: 220, ideal: 250)
@@ -109,5 +165,13 @@ struct SidebarView: View {
     private func formattedSize(for suggestions: [SpaceWaster]) -> String {
         let total = suggestions.reduce(0) { $0 + $1.size }
         return ByteCountFormatter.string(fromByteCount: total, countStyle: .file)
+    }
+
+    private func scanTimestamp(_ result: ScanResult) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        let relative = formatter.localizedString(for: result.scanDate, relativeTo: Date())
+        let duration = String(format: "%.1fs", result.duration)
+        return "\(relative) (\(duration))"
     }
 }

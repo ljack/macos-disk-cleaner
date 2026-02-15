@@ -17,6 +17,7 @@ enum ViewMode: String, CaseIterable {
 enum SidebarItem: Hashable {
     case disk
     case apps
+    case history
     case suggestion(SpaceWasterCategory)
 }
 
@@ -32,6 +33,23 @@ final class AppViewModel {
     var viewMode: ViewMode = .list
     var selectedSidebarItem: SidebarItem? = .disk
     var hasFullDiskAccess: Bool = false
+
+    // Auto-scan settings (persisted via UserDefaults)
+    var autoScanEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: "autoScanEnabled") }
+        set { UserDefaults.standard.set(newValue, forKey: "autoScanEnabled") }
+    }
+
+    var autoScanDelay: Int {
+        get {
+            let value = UserDefaults.standard.integer(forKey: "autoScanDelay")
+            return value > 0 ? value : 3
+        }
+        set { UserDefaults.standard.set(max(0, newValue), forKey: "autoScanDelay") }
+    }
+
+    // Trash history
+    var trashHistory: [TrashedItem] = []
 
     // Selection for deletion
     var selectedNodes: Set<FileNode> = []
@@ -51,6 +69,82 @@ final class AppViewModel {
 
     init() {
         hasFullDiskAccess = PermissionService.hasFullDiskAccess()
+        loadTrashHistory()
+    }
+
+    private func loadTrashHistory() {
+        guard let data = UserDefaults.standard.data(forKey: "trashHistory"),
+              let items = try? JSONDecoder().decode([TrashedItem].self, from: data) else { return }
+        trashHistory = items
+    }
+
+    private func saveTrashHistory() {
+        guard let data = try? JSONEncoder().encode(trashHistory) else { return }
+        UserDefaults.standard.set(data, forKey: "trashHistory")
+    }
+
+    func recordTrashed(originalURL: URL, trashURL: URL, size: Int64, source: TrashedItem.TrashSource) {
+        let item = TrashedItem(
+            id: UUID(),
+            originalURL: originalURL,
+            trashURL: trashURL,
+            name: originalURL.lastPathComponent,
+            size: size,
+            date: Date(),
+            source: source
+        )
+        trashHistory.insert(item, at: 0)
+        // Keep last 200 entries
+        if trashHistory.count > 200 {
+            trashHistory = Array(trashHistory.prefix(200))
+        }
+        saveTrashHistory()
+    }
+
+    func restoreFromTrash(_ item: TrashedItem) {
+        Task {
+            do {
+                try await deletionService.restoreFromTrash(trashURL: item.trashURL, to: item.originalURL)
+                await MainActor.run {
+                    self.trashHistory.removeAll { $0.id == item.id }
+                    self.saveTrashHistory()
+                    // Unmark the corresponding tree node if it exists
+                    if let root = self.scanVM.rootNode,
+                       let node = root.findNode(at: item.originalURL) {
+                        node.unmarkTrashed()
+                    }
+                    self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                }
+            } catch {
+                await MainActor.run {
+                    self.deletionError = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    func restoreNodeFromTrash(_ node: FileNode) {
+        guard let trashURL = node.trashURL else { return }
+        Task {
+            do {
+                try await deletionService.restoreFromTrash(trashURL: trashURL, to: node.url)
+                await MainActor.run {
+                    node.unmarkTrashed()
+                    self.trashHistory.removeAll { $0.originalURL == node.url }
+                    self.saveTrashHistory()
+                    self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                }
+            } catch {
+                await MainActor.run {
+                    self.deletionError = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    func clearTrashHistory() {
+        trashHistory.removeAll()
+        saveTrashHistory()
     }
 
     func startScan() {
@@ -97,10 +191,10 @@ final class AppViewModel {
         Task {
             do {
                 for node in nodesToDelete {
-                    try await deletionService.moveToTrash(url: node.url)
+                    let trashURL = try await deletionService.moveToTrash(url: node.url)
                     await MainActor.run {
-                        // Remove from tree and recalculate
-                        node.parent?.removeChild(node)
+                        self.recordTrashed(originalURL: node.url, trashURL: trashURL, size: node.size, source: .fileTree)
+                        node.markAsTrashed(trashURL: trashURL)
                         self.selectedNodes.remove(node)
                     }
                 }
@@ -123,10 +217,11 @@ final class AppViewModel {
         isDeleting = true
         Task {
             do {
-                try await deletionService.moveToTrash(url: suggestion.url)
+                let trashURL = try await deletionService.moveToTrash(url: suggestion.url)
                 await MainActor.run {
+                    self.recordTrashed(originalURL: suggestion.url, trashURL: trashURL, size: suggestion.size, source: .suggestion)
+                    self.markDeletedURLsInTree([suggestion.url], trashURLs: [trashURL])
                     self.isDeleting = false
-                    // Refresh suggestions and re-scan if we have results
                     self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
                 }
             } catch {
@@ -141,7 +236,40 @@ final class AppViewModel {
     // MARK: - App Uninstall
 
     func performAppUninstall() {
-        uninstallerVM.performUninstall(using: deletionService)
+        uninstallerVM.performUninstall(using: deletionService) { [weak self] originalURLs, trashedURLs, app in
+            guard let self else { return }
+            // Record each trashed item
+            for (index, originalURL) in originalURLs.enumerated() {
+                let trashURL = index < trashedURLs.count ? trashedURLs[index] : originalURL
+                let size: Int64
+                if originalURL == app.bundleURL {
+                    size = app.bundleSize
+                } else {
+                    size = app.associatedFiles.first { $0.url == originalURL }?.size ?? 0
+                }
+                self.recordTrashed(originalURL: originalURL, trashURL: trashURL, size: size, source: .appUninstall)
+            }
+            self.markDeletedURLsInTree(originalURLs, trashURLs: trashedURLs)
+            self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+        }
+    }
+
+    // MARK: - Tree sync
+
+    /// Mark nodes matching the given URLs as trashed in the scan tree and recalculate sizes.
+    func markDeletedURLsInTree(_ urls: [URL], trashURLs: [URL]) {
+        guard let root = scanVM.rootNode else { return }
+        for (index, url) in urls.enumerated() {
+            if let node = root.findNode(at: url) {
+                // If treemap is zoomed into a deleted node, zoom out
+                if treemapRoot?.id == node.id {
+                    treemapRoot = node.parent
+                }
+                selectedNodes.remove(node)
+                let trashURL = index < trashURLs.count ? trashURLs[index] : url
+                node.markAsTrashed(trashURL: trashURL)
+            }
+        }
     }
 
     // MARK: - Treemap navigation
