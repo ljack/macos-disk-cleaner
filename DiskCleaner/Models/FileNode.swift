@@ -14,6 +14,9 @@ final class FileNode: Identifiable {
     /// True if we couldn't read this directory due to permissions
     var isPermissionDenied: Bool = false
 
+    /// True if this is a TCC-protected directory that was skipped during scan
+    var awaitingPermission: Bool = false
+
     /// Number of descendants (files + directories) in subtree
     var descendantCount: Int = 0
 

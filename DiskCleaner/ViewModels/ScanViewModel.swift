@@ -69,6 +69,11 @@ final class ScanViewModel {
     var errorMessage: String?
     private(set) var wasCancelled = false
 
+    /// TCC-protected directories that were skipped during scan
+    var restrictedDirectories: [FileNode] = []
+    var isResolvingDirectory = false
+    var resolvingDirectoryName: String?
+
     private let engine = ScanningEngine()
     private var scanTask: Task<Void, Never>?
 
@@ -108,13 +113,15 @@ final class ScanViewModel {
         errorMessage = nil
         progress = nil
         scanResult = nil
+        restrictedDirectories = []
 
         let startTime = Date()
         let rootURL = mode.rootURL
+        let homeURL = FileManager.default.homeDirectoryForCurrentUser
 
         scanTask = Task {
             do {
-                let root = try await engine.scan(root: rootURL) { [weak self] progress in
+                let result = try await engine.scan(root: rootURL, homeURL: homeURL) { [weak self] progress in
                     Task { @MainActor in
                         self?.progress = progress
                     }
@@ -122,8 +129,9 @@ final class ScanViewModel {
 
                 await MainActor.run {
                     let duration = Date().timeIntervalSince(startTime)
+                    self.restrictedDirectories = result.pendingDirectories
                     self.scanResult = ScanResult(
-                        root: root,
+                        root: result.root,
                         scanDate: Date(),
                         duration: duration,
                         totalFiles: self.progress?.filesScanned ?? 0,
@@ -141,6 +149,44 @@ final class ScanViewModel {
                 await MainActor.run {
                     self.errorMessage = error.localizedDescription
                     self.isScanning = false
+                }
+            }
+        }
+    }
+
+    /// Rescan a single TCC-protected directory after user grants access
+    func rescanDirectory(_ node: FileNode) {
+        isResolvingDirectory = true
+        resolvingDirectoryName = node.name
+
+        Task {
+            do {
+                let scannedNode = try await engine.scanSubtree(at: node.url) { _ in }
+
+                await MainActor.run {
+                    // Transplant children from scanned result into existing node
+                    node.children = scannedNode.children
+                    for child in node.children {
+                        child.parent = node
+                    }
+                    node.awaitingPermission = false
+                    node.isPermissionDenied = false
+                    node.finalizeTree()
+                    node.parent?.recalculateSizeUpward()
+
+                    // Remove from restricted list
+                    self.restrictedDirectories.removeAll { $0.id == node.id }
+                    self.isResolvingDirectory = false
+                    self.resolvingDirectoryName = nil
+                }
+            } catch {
+                await MainActor.run {
+                    node.awaitingPermission = false
+                    node.isPermissionDenied = true
+
+                    // Keep in restricted list but update state
+                    self.isResolvingDirectory = false
+                    self.resolvingDirectoryName = nil
                 }
             }
         }

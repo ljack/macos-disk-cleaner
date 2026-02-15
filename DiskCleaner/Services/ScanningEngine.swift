@@ -24,17 +24,33 @@ actor ScanningEngine {
     private var bytesScanned: Int64 = 0
     private let progressInterval = 500
 
-    /// Scan a directory tree and return the root FileNode.
+    /// Known TCC-protected directory names (direct children of ~)
+    private static let tccProtectedNames: Set<String> = ["Desktop", "Documents", "Downloads"]
+
+    private var homeURL: URL?
+    private var pendingDirectories: [FileNode] = []
+
+    /// Check if a URL is a TCC-protected directory (direct child of home)
+    private func isTCCProtected(url: URL) -> Bool {
+        guard let homeURL else { return false }
+        return url.deletingLastPathComponent().standardizedFileURL == homeURL.standardizedFileURL
+            && Self.tccProtectedNames.contains(url.lastPathComponent)
+    }
+
+    /// Scan a directory tree and return the root FileNode plus any TCC-skipped directories.
     /// Reports progress via the callback (throttled to every 500 files).
     func scan(
         root: URL,
+        homeURL: URL,
         onProgress: @Sendable @escaping (ScanProgress) -> Void
-    ) async throws -> FileNode {
+    ) async throws -> (root: FileNode, pendingDirectories: [FileNode]) {
         filesScanned = 0
         directoriesScanned = 0
         bytesScanned = 0
+        self.homeURL = homeURL
+        pendingDirectories = []
 
-        let rootNode = try await scanDirectory(url: root, parent: nil, onProgress: onProgress)
+        let rootNode = try await scanDirectory(url: root, parent: nil, skipTCC: true, onProgress: onProgress)
         rootNode.finalizeTree()
 
         // Final progress report
@@ -45,12 +61,28 @@ actor ScanningEngine {
             bytesScanned: bytesScanned
         ))
 
-        return rootNode
+        return (root: rootNode, pendingDirectories: pendingDirectories)
+    }
+
+    /// Scan a single directory subtree (used after user grants TCC permission).
+    /// Does NOT apply TCC skip logic since the user has already granted access.
+    func scanSubtree(
+        at url: URL,
+        onProgress: @Sendable @escaping (ScanProgress) -> Void
+    ) async throws -> FileNode {
+        filesScanned = 0
+        directoriesScanned = 0
+        bytesScanned = 0
+
+        let node = try await scanDirectory(url: url, parent: nil, skipTCC: false, onProgress: onProgress)
+        node.finalizeTree()
+        return node
     }
 
     private func scanDirectory(
         url: URL,
         parent: FileNode?,
+        skipTCC: Bool,
         onProgress: @Sendable @escaping (ScanProgress) -> Void
     ) async throws -> FileNode {
         try Task.checkCancellation()
@@ -58,6 +90,13 @@ actor ScanningEngine {
         let node = FileNode(url: url, name: url.lastPathComponent, isDirectory: true)
         node.parent = parent
         directoriesScanned += 1
+
+        // Skip TCC-protected directories during initial scan
+        if skipTCC && isTCCProtected(url: url) {
+            node.awaitingPermission = true
+            pendingDirectories.append(node)
+            return node
+        }
 
         let contents: [URL]
         do {
@@ -91,6 +130,7 @@ actor ScanningEngine {
                 let childNode = try await scanDirectory(
                     url: itemURL,
                     parent: node,
+                    skipTCC: skipTCC,
                     onProgress: onProgress
                 )
                 node.children.append(childNode)

@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 /// View mode toggle
@@ -16,6 +17,7 @@ enum ViewMode: String, CaseIterable {
 /// Sidebar navigation items
 enum SidebarItem: Hashable {
     case disk
+    case permissions
     case apps
     case history
     case suggestion(SpaceWasterCategory)
@@ -160,6 +162,28 @@ final class AppViewModel {
     /// Called when scan completes — trigger suggestions detection
     func onScanComplete() {
         suggestionsVM.detect(scanRoot: scanVM.rootNode)
+    }
+
+    // MARK: - Directory Permissions
+
+    var hasRestrictedDirectories: Bool {
+        !scanVM.restrictedDirectories.isEmpty
+    }
+
+    func grantAccessToDirectory(_ node: FileNode) {
+        scanVM.rescanDirectory(node)
+    }
+
+    func retryDeniedDirectory(_ node: FileNode) {
+        node.isPermissionDenied = false
+        node.awaitingPermission = true
+        scanVM.rescanDirectory(node)
+    }
+
+    func openPrivacySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     /// Toggle access mode, checking FDA if needed
