@@ -9,6 +9,7 @@ enum AppSortOrder: String, CaseIterable {
 }
 
 /// Manages the app uninstaller feature state
+@MainActor
 @Observable
 final class AppUninstallerViewModel {
     var apps: [InstalledApp] = []
@@ -52,10 +53,8 @@ final class AppUninstallerViewModel {
         isScanning = true
         Task {
             let discovered = await engine.discoverApps()
-            await MainActor.run {
-                self.apps = discovered
-                self.isScanning = false
-            }
+            self.apps = discovered
+            self.isScanning = false
         }
     }
 
@@ -63,9 +62,7 @@ final class AppUninstallerViewModel {
     func requestUninstallFromTree(bundleURL: URL) {
         Task {
             guard let app = await engine.buildApp(from: bundleURL) else { return }
-            await MainActor.run {
-                self.requestUninstall(app)
-            }
+            self.requestUninstall(app)
         }
     }
 
@@ -77,7 +74,7 @@ final class AppUninstallerViewModel {
     }
 
     /// Perform the uninstall using the shared DeletionService
-    func performUninstall(using deletionService: DeletionService, onComplete: (@MainActor (_ originalURLs: [URL], _ trashedURLs: [URL], _ app: InstalledApp) -> Void)? = nil) {
+    func performUninstall(using deletionService: DeletionService, onComplete: (@MainActor @Sendable (_ originalURLs: [URL], _ trashedURLs: [URL], _ app: InstalledApp) -> Void)? = nil) {
         guard let app = appToUninstall else { return }
         isUninstalling = true
         uninstallError = nil
@@ -89,21 +86,17 @@ final class AppUninstallerViewModel {
 
                 let trashedURLs = try await deletionService.moveToTrash(urls: urls)
 
-                await MainActor.run {
-                    self.apps.removeAll { $0.id == app.id }
-                    if self.selectedApp?.id == app.id {
-                        self.selectedApp = nil
-                    }
-                    self.isUninstalling = false
-                    self.showingUninstallConfirmation = false
-                    self.appToUninstall = nil
-                    onComplete?(urls, trashedURLs, app)
+                self.apps.removeAll { $0.id == app.id }
+                if self.selectedApp?.id == app.id {
+                    self.selectedApp = nil
                 }
+                self.isUninstalling = false
+                self.showingUninstallConfirmation = false
+                self.appToUninstall = nil
+                onComplete?(urls, trashedURLs, app)
             } catch {
-                await MainActor.run {
-                    self.uninstallError = error.localizedDescription
-                    self.isUninstalling = false
-                }
+                self.uninstallError = error.localizedDescription
+                self.isUninstalling = false
             }
         }
     }

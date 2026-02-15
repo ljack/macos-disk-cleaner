@@ -119,6 +119,8 @@ final class FileNode: Identifiable {
     }
 }
 
+extension FileNode: @unchecked Sendable {}
+
 extension FileNode: Hashable {
     static func == (lhs: FileNode, rhs: FileNode) -> Bool {
         lhs.id == rhs.id

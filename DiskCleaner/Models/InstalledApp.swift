@@ -26,7 +26,7 @@ enum AssociatedFileCategory: String, CaseIterable {
 }
 
 /// A file or directory associated with an installed application
-struct AssociatedFile: Identifiable {
+struct AssociatedFile: Identifiable, Sendable {
     let id = UUID()
     let url: URL
     let size: Int64
@@ -38,7 +38,7 @@ struct AssociatedFile: Identifiable {
 }
 
 /// An installed macOS application with its bundle and associated data
-struct InstalledApp: Identifiable, Hashable {
+struct InstalledApp: Identifiable, Hashable, Sendable {
     let id = UUID()
     let name: String
     let bundleIdentifier: String?

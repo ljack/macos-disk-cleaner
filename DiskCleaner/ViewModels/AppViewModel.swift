@@ -123,21 +123,17 @@ final class AppViewModel {
         Task {
             do {
                 try await deletionService.restoreFromTrash(trashURL: item.trashURL, to: item.originalURL)
-                await MainActor.run {
-                    self.trashHistory.removeAll { $0.id == item.id }
-                    self.saveTrashHistory()
-                    // Unmark the corresponding tree node if it exists
-                    if let root = self.scanVM.rootNode,
-                       let node = root.findNode(at: item.originalURL) {
-                        node.unmarkTrashed()
-                    }
-                    self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
-                    self.refreshDiskSpace()
+                self.trashHistory.removeAll { $0.id == item.id }
+                self.saveTrashHistory()
+                // Unmark the corresponding tree node if it exists
+                if let root = self.scanVM.rootNode,
+                   let node = root.findNode(at: item.originalURL) {
+                    node.unmarkTrashed()
                 }
+                self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                self.refreshDiskSpace()
             } catch {
-                await MainActor.run {
-                    self.deletionError = error.localizedDescription
-                }
+                self.deletionError = error.localizedDescription
             }
         }
     }
@@ -147,17 +143,13 @@ final class AppViewModel {
         Task {
             do {
                 try await deletionService.restoreFromTrash(trashURL: trashURL, to: node.url)
-                await MainActor.run {
-                    node.unmarkTrashed()
-                    self.trashHistory.removeAll { $0.originalURL == node.url }
-                    self.saveTrashHistory()
-                    self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
-                    self.refreshDiskSpace()
-                }
+                node.unmarkTrashed()
+                self.trashHistory.removeAll { $0.originalURL == node.url }
+                self.saveTrashHistory()
+                self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                self.refreshDiskSpace()
             } catch {
-                await MainActor.run {
-                    self.deletionError = error.localizedDescription
-                }
+                self.deletionError = error.localizedDescription
             }
         }
     }
@@ -306,24 +298,17 @@ final class AppViewModel {
             do {
                 for node in nodesToDelete {
                     let trashURL = try await deletionService.moveToTrash(url: node.url)
-                    await MainActor.run {
-                        self.recordTrashed(originalURL: node.url, trashURL: trashURL, size: node.size, source: .fileTree)
-                        node.markAsTrashed(trashURL: trashURL)
-                        self.selectedNodes.remove(node)
-                    }
+                    self.recordTrashed(originalURL: node.url, trashURL: trashURL, size: node.size, source: .fileTree)
+                    node.markAsTrashed(trashURL: trashURL)
+                    self.selectedNodes.remove(node)
                 }
-                await MainActor.run {
-                    self.isDeleting = false
-                    self.showingDeleteConfirmation = false
-                    // Refresh suggestions
-                    self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
-                    self.refreshDiskSpace()
-                }
+                self.isDeleting = false
+                self.showingDeleteConfirmation = false
+                self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                self.refreshDiskSpace()
             } catch {
-                await MainActor.run {
-                    self.deletionError = error.localizedDescription
-                    self.isDeleting = false
-                }
+                self.deletionError = error.localizedDescription
+                self.isDeleting = false
             }
         }
     }
@@ -333,18 +318,14 @@ final class AppViewModel {
         Task {
             do {
                 let trashURL = try await deletionService.moveToTrash(url: suggestion.url)
-                await MainActor.run {
-                    self.recordTrashed(originalURL: suggestion.url, trashURL: trashURL, size: suggestion.size, source: .suggestion)
-                    self.markDeletedURLsInTree([suggestion.url], trashURLs: [trashURL])
-                    self.isDeleting = false
-                    self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
-                    self.refreshDiskSpace()
-                }
+                self.recordTrashed(originalURL: suggestion.url, trashURL: trashURL, size: suggestion.size, source: .suggestion)
+                self.markDeletedURLsInTree([suggestion.url], trashURLs: [trashURL])
+                self.isDeleting = false
+                self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                self.refreshDiskSpace()
             } catch {
-                await MainActor.run {
-                    self.deletionError = error.localizedDescription
-                    self.isDeleting = false
-                }
+                self.deletionError = error.localizedDescription
+                self.isDeleting = false
             }
         }
     }

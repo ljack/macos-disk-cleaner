@@ -77,6 +77,8 @@ final class ScanViewModel {
 
     private let engine = ScanningEngine()
     private var scanTask: Task<Void, Never>?
+    private var rescanTask: Task<Void, Never>?
+    private var rescanGeneration = 0
 
     var rootNode: FileNode? {
         scanResult?.root
@@ -120,14 +122,15 @@ final class ScanViewModel {
         let rootURL = mode.rootURL
         let homeURL = FileManager.default.homeDirectoryForCurrentUser
 
-        scanTask = Task {
+        scanTask = Task { [weak self] in
+            guard let self else { return }
             do {
-                let result = try await engine.scan(
+                let result = try await self.engine.scan(
                     root: rootURL,
                     homeURL: homeURL,
                     exclusionRules: exclusionRules
-                ) { progress in
-                    self.progress = progress
+                ) { [weak self] progress in
+                    self?.progress = progress
                 }
 
                 let duration = Date().timeIntervalSince(startTime)
@@ -154,12 +157,17 @@ final class ScanViewModel {
 
     /// Rescan a single TCC-protected directory after user grants access
     func rescanDirectory(_ node: FileNode) {
+        rescanTask?.cancel()
         isResolvingDirectory = true
         resolvingDirectoryName = node.name
 
-        Task {
+        rescanGeneration += 1
+        let generation = rescanGeneration
+
+        rescanTask = Task {
             do {
                 let scannedNode = try await engine.scanSubtree(at: node.url) { _ in }
+                guard generation == self.rescanGeneration else { return }
 
                 // Transplant children from scanned result into existing node
                 node.children = scannedNode.children
@@ -176,13 +184,18 @@ final class ScanViewModel {
                 self.restrictedDirectories.removeAll { $0.id == node.id }
                 self.isResolvingDirectory = false
                 self.resolvingDirectoryName = nil
+                self.rescanTask = nil
+            } catch is CancellationError {
+                // Cancelled by a newer rescanDirectory call — don't touch shared state
             } catch {
+                guard generation == self.rescanGeneration else { return }
                 node.awaitingPermission = false
                 node.isPermissionDenied = true
 
                 // Keep in restricted list but update state
                 self.isResolvingDirectory = false
                 self.resolvingDirectoryName = nil
+                self.rescanTask = nil
             }
         }
     }

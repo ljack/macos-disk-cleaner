@@ -46,7 +46,7 @@ actor ScanningEngine {
         root: URL,
         homeURL: URL,
         exclusionRules: [ScanExclusionRule],
-        onProgress: @MainActor @escaping (ScanProgress) -> Void
+        onProgress: @MainActor @Sendable @escaping (ScanProgress) -> Void
     ) async throws -> (
         root: FileNode,
         pendingDirectories: [FileNode],
@@ -82,7 +82,7 @@ actor ScanningEngine {
     /// Does NOT apply TCC skip logic since the user has already granted access.
     func scanSubtree(
         at url: URL,
-        onProgress: @MainActor @escaping (ScanProgress) -> Void
+        onProgress: @MainActor @Sendable @escaping (ScanProgress) -> Void
     ) async throws -> FileNode {
         filesScanned = 0
         directoriesScanned = 0
@@ -99,7 +99,7 @@ actor ScanningEngine {
         url: URL,
         parent: FileNode?,
         skipTCC: Bool,
-        onProgress: @MainActor @escaping (ScanProgress) -> Void
+        onProgress: @MainActor @Sendable @escaping (ScanProgress) -> Void
     ) async throws -> FileNode {
         try Task.checkCancellation()
 

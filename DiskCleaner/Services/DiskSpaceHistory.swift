@@ -1,6 +1,7 @@
 import Foundation
 
 /// Persists disk free-space snapshots with automatic time-bucket compaction.
+@MainActor
 @Observable
 final class DiskSpaceHistory {
     private(set) var snapshots: [DiskSpaceSnapshot] = []

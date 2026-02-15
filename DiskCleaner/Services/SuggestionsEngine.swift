@@ -4,8 +4,8 @@ import Foundation
 actor SuggestionsEngine {
     private let fileManager = FileManager.default
 
-    /// Detect all known space wasters. Checks locations concurrently.
-    func detectAll(scanRoot: FileNode?) async -> [SpaceWaster] {
+    /// Detect known filesystem space wasters. Checks locations concurrently.
+    func detectFilesystemWasters() async -> [SpaceWaster] {
         let home = fileManager.homeDirectoryForCurrentUser
 
         async let xcodeDerived = checkDirectory(
@@ -51,15 +51,7 @@ actor SuggestionsEngine {
             dockerData, trash
         ]
 
-        // Find node_modules directories from scan tree if available
-        var allResults = results.compactMap { $0 }
-
-        if let root = scanRoot {
-            let nodeModules = findNodeModules(in: root)
-            allResults.append(contentsOf: nodeModules)
-        }
-
-        return allResults.sorted { $0.size > $1.size }
+        return results.compactMap { $0 }
     }
 
     /// Check a single directory, returning a SpaceWaster if it exists and has content
@@ -99,26 +91,4 @@ actor SuggestionsEngine {
         return (totalSize, itemCount)
     }
 
-    /// Recursively find node_modules directories in the scanned tree
-    private func findNodeModules(in node: FileNode) -> [SpaceWaster] {
-        guard !node.isTrashed && !node.isHidden else { return [] }
-
-        var results: [SpaceWaster] = []
-
-        if node.isDirectory && node.name == "node_modules" {
-            results.append(SpaceWaster(
-                category: .nodeModules,
-                url: node.url,
-                size: node.size,
-                itemCount: node.descendantCount
-            ))
-            return results // Don't recurse into node_modules
-        }
-
-        for child in node.children where child.isDirectory {
-            results.append(contentsOf: findNodeModules(in: child))
-        }
-
-        return results
-    }
 }

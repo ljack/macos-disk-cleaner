@@ -158,7 +158,11 @@ struct PermissionsView: View {
             for node in pending {
                 appVM.grantAccessToDirectory(node)
                 // Wait a moment between each to avoid overlapping TCC popups
-                try? await Task.sleep(for: .milliseconds(500))
+                do {
+                    try await Task.sleep(for: .milliseconds(500))
+                } catch {
+                    return
+                }
             }
         }
     }

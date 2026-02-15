@@ -66,7 +66,7 @@ enum RiskLevel: String {
 }
 
 /// A detected space waster with its location and size
-struct SpaceWaster: Identifiable {
+struct SpaceWaster: Identifiable, Sendable {
     let id = UUID()
     let category: SpaceWasterCategory
     let url: URL
