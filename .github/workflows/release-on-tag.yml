@@ -12,6 +12,10 @@ jobs:
   release:
     runs-on: macos-latest
 
+    env:
+      SIGNING_ENABLED: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' }}
+      NOTARIZATION_ENABLED: ${{ secrets.APPLE_ID != '' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +36,7 @@ jobs:
         run: chmod +x scripts/ci/*.sh
 
       - name: Import signing certificate
-        if: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' }}
+        if: env.SIGNING_ENABLED == 'true'
         id: cert
         run: scripts/ci/import_certificate.sh
         env:
@@ -58,10 +62,10 @@ jobs:
 
           echo "dmg_path=$dmg_path" >> "$GITHUB_OUTPUT"
         env:
-          CODE_SIGN_IDENTITY: ${{ secrets.APPLE_TEAM_ID != '' && 'Developer ID Application' || '' }}
+          CODE_SIGN_IDENTITY: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' && 'Developer ID Application' || '' }}
 
       - name: Notarize DMG
-        if: ${{ secrets.APPLE_ID != '' }}
+        if: env.NOTARIZATION_ENABLED == 'true'
         run: scripts/ci/notarize.sh "${{ steps.package.outputs.dmg_path }}"
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -69,7 +73,7 @@ jobs:
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
 
       - name: Regenerate checksum after notarization
-        if: ${{ secrets.APPLE_ID != '' }}
+        if: env.NOTARIZATION_ENABLED == 'true'
         run: shasum -a 256 "${{ steps.package.outputs.dmg_path }}" > "${{ steps.package.outputs.dmg_path }}.sha256"
 
       - name: Clean up keychain
