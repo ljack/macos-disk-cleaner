@@ -85,8 +85,7 @@ final class AppUninstallerViewModel {
         Task {
             do {
                 // Collect all URLs to trash: app bundle + associated files
-                var urls = [app.bundleURL]
-                urls.append(contentsOf: app.associatedFiles.map(\.url))
+                let urls = [app.bundleURL] + app.associatedFiles.map(\.url)
 
                 let trashedURLs = try await deletionService.moveToTrash(urls: urls)
 
