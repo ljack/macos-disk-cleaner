@@ -101,6 +101,8 @@ actor SuggestionsEngine {
 
     /// Recursively find node_modules directories in the scanned tree
     private func findNodeModules(in node: FileNode) -> [SpaceWaster] {
+        guard !node.isTrashed && !node.isHidden else { return [] }
+
         var results: [SpaceWaster] = []
 
         if node.isDirectory && node.name == "node_modules" {

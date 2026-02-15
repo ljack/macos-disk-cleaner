@@ -19,6 +19,7 @@ enum SidebarItem: Hashable {
     case disk
     case permissions
     case apps
+    case hiddenItems
     case history
     case suggestion(SpaceWasterCategory)
 }
@@ -50,6 +51,10 @@ final class AppViewModel {
         set { UserDefaults.standard.set(max(0, newValue), forKey: "autoScanDelay") }
     }
 
+    // Hidden nodes
+    var hiddenNodes: [FileNode] = []
+    var hasHiddenNodes: Bool { !hiddenNodes.isEmpty }
+
     // Trash history
     var trashHistory: [TrashedItem] = []
 
@@ -72,6 +77,7 @@ final class AppViewModel {
     init() {
         hasFullDiskAccess = PermissionService.hasFullDiskAccess()
         loadTrashHistory()
+        refreshDiskSpace()
     }
 
     private func loadTrashHistory() {
@@ -116,6 +122,7 @@ final class AppViewModel {
                         node.unmarkTrashed()
                     }
                     self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                    self.refreshDiskSpace()
                 }
             } catch {
                 await MainActor.run {
@@ -135,6 +142,7 @@ final class AppViewModel {
                     self.trashHistory.removeAll { $0.originalURL == node.url }
                     self.saveTrashHistory()
                     self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                    self.refreshDiskSpace()
                 }
             } catch {
                 await MainActor.run {
@@ -149,9 +157,37 @@ final class AppViewModel {
         saveTrashHistory()
     }
 
+    // MARK: - Hide/Unhide
+
+    func hideNode(_ node: FileNode) {
+        node.isHidden = true
+        selectedNodes.remove(node)
+        // If treemap is zoomed into the hidden node, zoom out
+        if treemapRoot?.id == node.id {
+            treemapRoot = node.parent
+        }
+        node.parent?.recalculateSizeUpward()
+        hiddenNodes.append(node)
+    }
+
+    func unhideNode(_ node: FileNode) {
+        node.isHidden = false
+        node.parent?.recalculateSizeUpward()
+        hiddenNodes.removeAll { $0.id == node.id }
+    }
+
+    func unhideAll() {
+        for node in hiddenNodes {
+            node.isHidden = false
+            node.parent?.recalculateSizeUpward()
+        }
+        hiddenNodes.removeAll()
+    }
+
     func startScan() {
         treemapRoot = nil
         selectedNodes.removeAll()
+        hiddenNodes.removeAll()
         scanVM.startScan(mode: accessMode)
     }
 
@@ -162,6 +198,7 @@ final class AppViewModel {
     /// Called when scan completes — trigger suggestions detection
     func onScanComplete() {
         suggestionsVM.detect(scanRoot: scanVM.rootNode)
+        refreshDiskSpace()
     }
 
     // MARK: - Directory Permissions
@@ -227,6 +264,7 @@ final class AppViewModel {
                     self.showingDeleteConfirmation = false
                     // Refresh suggestions
                     self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                    self.refreshDiskSpace()
                 }
             } catch {
                 await MainActor.run {
@@ -247,6 +285,7 @@ final class AppViewModel {
                     self.markDeletedURLsInTree([suggestion.url], trashURLs: [trashURL])
                     self.isDeleting = false
                     self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+                    self.refreshDiskSpace()
                 }
             } catch {
                 await MainActor.run {
@@ -275,6 +314,7 @@ final class AppViewModel {
             }
             self.markDeletedURLsInTree(originalURLs, trashURLs: trashedURLs)
             self.suggestionsVM.detect(scanRoot: self.scanVM.rootNode)
+            self.refreshDiskSpace()
         }
     }
 
@@ -294,6 +334,21 @@ final class AppViewModel {
                 node.markAsTrashed(trashURL: trashURL)
             }
         }
+    }
+
+    // MARK: - Reveal in Finder
+
+    func revealInFinder(_ node: FileNode) {
+        NSWorkspace.shared.activateFileViewerSelecting([node.url])
+    }
+
+    /// Navigate the main view into a directory by URL (e.g. from suggestions)
+    func navigateToDirectory(url: URL) {
+        guard let root = scanVM.rootNode,
+              let node = root.findNode(at: url),
+              node.isDirectory else { return }
+        selectedSidebarItem = .disk
+        treemapRoot = node
     }
 
     // MARK: - Treemap navigation
@@ -325,13 +380,15 @@ final class AppViewModel {
 
     // MARK: - Disk space info
 
-    var diskSpaceInfo: (total: Int64, free: Int64, used: Int64)? {
+    var diskSpaceInfo: (total: Int64, free: Int64, used: Int64)?
+
+    func refreshDiskSpace() {
         guard let values = try? URL(fileURLWithPath: "/").resourceValues(
             forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey]
-        ) else { return nil }
+        ) else { return }
 
         let total = Int64(values.volumeTotalCapacity ?? 0)
         let free = Int64(values.volumeAvailableCapacityForImportantUsage ?? 0)
-        return (total: total, free: free, used: total - free)
+        diskSpaceInfo = (total: total, free: free, used: total - free)
     }
 }

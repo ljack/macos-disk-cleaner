@@ -23,6 +23,9 @@ final class FileNode: Identifiable {
     /// True if this node has been moved to Trash
     var isTrashed: Bool = false
 
+    /// True if this node is hidden from results by the user
+    var isHidden: Bool = false
+
     /// The URL of this item in Trash (for restore)
     var trashURL: URL?
 
@@ -72,7 +75,7 @@ final class FileNode: Identifiable {
     /// Recalculate this node's size and propagate to parent (excludes trashed children)
     func recalculateSizeUpward() {
         if isDirectory {
-            let activeChildren = children.filter { !$0.isTrashed }
+            let activeChildren = children.filter { !$0.isTrashed && !$0.isHidden }
             size = activeChildren.reduce(0) { $0 + $1.size }
             descendantCount = activeChildren.reduce(0) { $0 + $1.descendantCount + 1 }
         }

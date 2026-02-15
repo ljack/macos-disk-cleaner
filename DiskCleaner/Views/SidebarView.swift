@@ -59,6 +59,25 @@ struct SidebarView: View {
                 }
             }
 
+            if appVM.hasHiddenNodes {
+                Section("Hidden") {
+                    Label {
+                        HStack {
+                            Text("Hidden Items")
+                            Spacer()
+                            Text("\(appVM.hiddenNodes.count)")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.fill.tertiary, in: Capsule())
+                        }
+                    } icon: {
+                        Image(systemName: "eye.slash")
+                    }
+                    .tag(SidebarItem.hiddenItems)
+                }
+            }
+
             Section("Applications") {
                 Label {
                     HStack {

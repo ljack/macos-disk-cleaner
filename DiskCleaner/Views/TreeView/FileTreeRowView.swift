@@ -100,6 +100,11 @@ struct FileTreeRowView: View {
             }
         }
         .padding(.vertical, 2)
+        .onTapGesture(count: 2) {
+            if !node.isTrashed && !node.awaitingPermission {
+                appVM.revealInFinder(node)
+            }
+        }
         .contextMenu {
             if node.isTrashed {
                 Button {
@@ -123,6 +128,17 @@ struct FileTreeRowView: View {
                     appVM.uninstallerVM.requestUninstallFromTree(bundleURL: node.url)
                 } label: {
                     Label("Uninstall \(node.url.deletingPathExtension().lastPathComponent)...", systemImage: "trash")
+                }
+                Button {
+                    appVM.hideNode(node)
+                } label: {
+                    Label("Hide from Results", systemImage: "eye.slash")
+                }
+            } else if !node.awaitingPermission {
+                Button {
+                    appVM.hideNode(node)
+                } label: {
+                    Label("Hide from Results", systemImage: "eye.slash")
                 }
             }
         }

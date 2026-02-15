@@ -33,6 +33,8 @@ struct MainWindowView: View {
         switch appVM.selectedSidebarItem {
         case .permissions:
             PermissionsView()
+        case .hiddenItems:
+            HiddenItemsView()
         case .apps:
             AppListView()
         case .history:

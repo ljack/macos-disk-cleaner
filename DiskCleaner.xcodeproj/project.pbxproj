@@ -43,6 +43,7 @@
 		A10000010000000000000036 /* TrashedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036; };
 		A10000010000000000000037 /* TrashHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000037; };
 		A10000010000000000000038 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000038; };
+		A10000010000000000000039 /* HiddenItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000039; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,6 +84,7 @@
 		A20000010000000000000036 /* TrashedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrashedItem.swift; sourceTree = "<group>"; };
 		A20000010000000000000037 /* TrashHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrashHistoryView.swift; sourceTree = "<group>"; };
 		A20000010000000000000038 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
+		A20000010000000000000039 /* HiddenItemsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenItemsView.swift; sourceTree = "<group>"; };
 		A30000010000000000000001 /* DiskCleaner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiskCleaner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -241,6 +243,7 @@
 				A20000010000000000000028 /* ScanButtonView.swift */,
 				A20000010000000000000037 /* TrashHistoryView.swift */,
 				A20000010000000000000038 /* PermissionsView.swift */,
+				A20000010000000000000039 /* HiddenItemsView.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -349,6 +352,7 @@
 				A10000010000000000000036 /* TrashedItem.swift in Sources */,
 				A10000010000000000000037 /* TrashHistoryView.swift in Sources */,
 				A10000010000000000000038 /* PermissionsView.swift in Sources */,
+				A10000010000000000000039 /* HiddenItemsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

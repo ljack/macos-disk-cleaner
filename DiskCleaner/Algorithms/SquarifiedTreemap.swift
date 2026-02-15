@@ -31,7 +31,7 @@ enum SquarifiedTreemap {
             return []
         }
 
-        let children = node.children.filter { $0.size > 0 }
+        let children = node.children.filter { $0.size > 0 && !$0.isHidden }
         guard !children.isEmpty else { return [] }
 
         let totalSize = Double(children.reduce(0) { $0 + $1.size })
