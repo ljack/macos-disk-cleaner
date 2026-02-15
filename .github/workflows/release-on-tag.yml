@@ -1,0 +1,48 @@
+name: Release DMG on Tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make CI scripts executable
+        run: chmod +x scripts/ci/*.sh
+
+      - name: Build Release app
+        id: build
+        run: scripts/ci/build_release_app.sh
+
+      - name: Package DMG and checksum
+        id: package
+        run: |
+          mkdir -p build/artifacts
+          tag="${GITHUB_REF_NAME}"
+          dmg_name="DiskCleaner-${tag}.dmg"
+          dmg_path="build/artifacts/${dmg_name}"
+
+          scripts/ci/package_dmg.sh "${{ steps.build.outputs.app_path }}" "$dmg_path" "DiskCleaner ${tag}"
+          shasum -a 256 "$dmg_path" > "${dmg_path}.sha256"
+
+          echo "dmg_path=$dmg_path" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: DiskCleaner ${{ github.ref_name }}
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            ${{ steps.package.outputs.dmg_path }}
+            ${{ steps.package.outputs.dmg_path }}.sha256
