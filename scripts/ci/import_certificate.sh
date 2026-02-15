@@ -23,6 +23,9 @@ trap cleanup EXIT
 # -D is the BSD/macOS base64 decode flag)
 printf '%s' "$APPLE_CERTIFICATE_BASE64" | base64 -D > "$CERT_FILE"
 
+echo "Decoded certificate: $(wc -c < "$CERT_FILE") bytes"
+echo "File header (hex): $(xxd -l 4 -p "$CERT_FILE")"
+
 # Create and configure temporary keychain
 security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
 security set-keychain-settings -lut 21600 "$KEYCHAIN_NAME"
@@ -33,7 +36,8 @@ security import "$CERT_FILE" \
   -k "$KEYCHAIN_NAME" \
   -P "$APPLE_CERTIFICATE_PASSWORD" \
   -T /usr/bin/codesign \
-  -T /usr/bin/security
+  -T /usr/bin/security \
+  -f pkcs12
 
 # Allow codesign to access the keychain without prompting
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
