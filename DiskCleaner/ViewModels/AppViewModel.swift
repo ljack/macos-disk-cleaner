@@ -25,6 +25,7 @@ enum SidebarItem: Hashable {
 }
 
 /// Central coordinator ViewModel
+@MainActor
 @Observable
 final class AppViewModel {
     let scanVM = ScanViewModel()

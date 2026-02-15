@@ -43,7 +43,7 @@ actor ScanningEngine {
     func scan(
         root: URL,
         homeURL: URL,
-        onProgress: @Sendable @escaping (ScanProgress) -> Void
+        onProgress: @MainActor @escaping (ScanProgress) -> Void
     ) async throws -> (root: FileNode, pendingDirectories: [FileNode]) {
         filesScanned = 0
         directoriesScanned = 0
@@ -55,7 +55,7 @@ actor ScanningEngine {
         rootNode.finalizeTree()
 
         // Final progress report
-        onProgress(ScanProgress(
+        await onProgress(ScanProgress(
             filesScanned: filesScanned,
             directoriesScanned: directoriesScanned,
             currentPath: root.path,
@@ -69,7 +69,7 @@ actor ScanningEngine {
     /// Does NOT apply TCC skip logic since the user has already granted access.
     func scanSubtree(
         at url: URL,
-        onProgress: @Sendable @escaping (ScanProgress) -> Void
+        onProgress: @MainActor @escaping (ScanProgress) -> Void
     ) async throws -> FileNode {
         filesScanned = 0
         directoriesScanned = 0
@@ -84,7 +84,7 @@ actor ScanningEngine {
         url: URL,
         parent: FileNode?,
         skipTCC: Bool,
-        onProgress: @Sendable @escaping (ScanProgress) -> Void
+        onProgress: @MainActor @escaping (ScanProgress) -> Void
     ) async throws -> FileNode {
         try Task.checkCancellation()
 
@@ -162,7 +162,7 @@ actor ScanningEngine {
                         currentPath: itemURL.path,
                         bytesScanned: bytesScanned
                     )
-                    onProgress(progress)
+                    await onProgress(progress)
                 }
             }
         }

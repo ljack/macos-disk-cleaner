@@ -61,6 +61,7 @@ enum ScanStatus: Equatable {
 }
 
 /// Manages scanning state and progress
+@MainActor
 @Observable
 final class ScanViewModel {
     var isScanning = false
@@ -122,34 +123,26 @@ final class ScanViewModel {
         scanTask = Task {
             do {
                 let result = try await engine.scan(root: rootURL, homeURL: homeURL) { progress in
-                    Task { @MainActor [progress] in
-                        self.progress = progress
-                    }
+                    self.progress = progress
                 }
 
-                await MainActor.run {
-                    let duration = Date().timeIntervalSince(startTime)
-                    self.restrictedDirectories = result.pendingDirectories
-                    self.scanResult = ScanResult(
-                        root: result.root,
-                        scanDate: Date(),
-                        duration: duration,
-                        totalFiles: self.progress?.filesScanned ?? 0,
-                        totalDirectories: self.progress?.directoriesScanned ?? 0,
-                        accessMode: mode
-                    )
-                    self.isScanning = false
-                }
+                let duration = Date().timeIntervalSince(startTime)
+                self.restrictedDirectories = result.pendingDirectories
+                self.scanResult = ScanResult(
+                    root: result.root,
+                    scanDate: Date(),
+                    duration: duration,
+                    totalFiles: self.progress?.filesScanned ?? 0,
+                    totalDirectories: self.progress?.directoriesScanned ?? 0,
+                    accessMode: mode
+                )
+                self.isScanning = false
             } catch is CancellationError {
-                await MainActor.run {
-                    self.wasCancelled = true
-                    self.isScanning = false
-                }
+                self.wasCancelled = true
+                self.isScanning = false
             } catch {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isScanning = false
-                }
+                self.errorMessage = error.localizedDescription
+                self.isScanning = false
             }
         }
     }
@@ -163,31 +156,27 @@ final class ScanViewModel {
             do {
                 let scannedNode = try await engine.scanSubtree(at: node.url) { _ in }
 
-                await MainActor.run {
-                    // Transplant children from scanned result into existing node
-                    node.children = scannedNode.children
-                    for child in node.children {
-                        child.parent = node
-                    }
-                    node.awaitingPermission = false
-                    node.isPermissionDenied = false
-                    node.finalizeTree()
-                    node.parent?.recalculateSizeUpward()
-
-                    // Remove from restricted list
-                    self.restrictedDirectories.removeAll { $0.id == node.id }
-                    self.isResolvingDirectory = false
-                    self.resolvingDirectoryName = nil
+                // Transplant children from scanned result into existing node
+                node.children = scannedNode.children
+                for child in node.children {
+                    child.parent = node
                 }
+                node.awaitingPermission = false
+                node.isPermissionDenied = false
+                node.finalizeTree()
+                node.parent?.recalculateSizeUpward()
+
+                // Remove from restricted list
+                self.restrictedDirectories.removeAll { $0.id == node.id }
+                self.isResolvingDirectory = false
+                self.resolvingDirectoryName = nil
             } catch {
-                await MainActor.run {
-                    node.awaitingPermission = false
-                    node.isPermissionDenied = true
+                node.awaitingPermission = false
+                node.isPermissionDenied = true
 
-                    // Keep in restricted list but update state
-                    self.isResolvingDirectory = false
-                    self.resolvingDirectoryName = nil
-                }
+                // Keep in restricted list but update state
+                self.isResolvingDirectory = false
+                self.resolvingDirectoryName = nil
             }
         }
     }
