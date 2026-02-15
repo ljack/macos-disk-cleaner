@@ -121,9 +121,9 @@ final class ScanViewModel {
 
         scanTask = Task {
             do {
-                let result = try await engine.scan(root: rootURL, homeURL: homeURL) { [weak self] progress in
-                    Task { @MainActor in
-                        self?.progress = progress
+                let result = try await engine.scan(root: rootURL, homeURL: homeURL) { progress in
+                    Task { @MainActor [progress] in
+                        self.progress = progress
                     }
                 }
 
