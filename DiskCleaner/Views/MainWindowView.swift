@@ -31,6 +31,8 @@ struct MainWindowView: View {
     @ViewBuilder
     private var detailContent: some View {
         switch appVM.selectedSidebarItem {
+        case .permissions:
+            PermissionsView()
         case .apps:
             AppListView()
         case .history:

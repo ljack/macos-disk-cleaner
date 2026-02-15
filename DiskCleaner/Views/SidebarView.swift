@@ -39,6 +39,26 @@ struct SidebarView: View {
                 .tag(SidebarItem.disk)
             }
 
+            if appVM.hasRestrictedDirectories {
+                Section("Permissions") {
+                    Label {
+                        HStack {
+                            Text("Directory Access")
+                            Spacer()
+                            Text("\(appVM.scanVM.restrictedDirectories.count)")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.orange.opacity(0.2), in: Capsule())
+                        }
+                    } icon: {
+                        Image(systemName: "shield.lefthalf.filled")
+                            .foregroundStyle(.orange)
+                    }
+                    .tag(SidebarItem.permissions)
+                }
+            }
+
             Section("Applications") {
                 Label {
                     HStack {

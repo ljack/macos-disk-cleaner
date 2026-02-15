@@ -33,6 +33,28 @@ struct FileTreeRowView: View {
                     .monospacedDigit()
                     .foregroundStyle(.tertiary)
                     .frame(width: 70, alignment: .trailing)
+            } else if node.awaitingPermission {
+                // TCC-pending state: shield icon + grant access button
+                Image(systemName: "shield.lefthalf.filled")
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(.orange)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(node.name)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Text("Needs permission")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
+
+                Spacer()
+
+                Button("Grant Access") {
+                    appVM.grantAccessToDirectory(node)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             } else {
                 // Normal state
                 Toggle(isOn: Binding(
@@ -84,6 +106,17 @@ struct FileTreeRowView: View {
                     appVM.restoreNodeFromTrash(node)
                 } label: {
                     Label("Restore", systemImage: "arrow.uturn.backward")
+                }
+            } else if node.isPermissionDenied {
+                Button {
+                    appVM.retryDeniedDirectory(node)
+                } label: {
+                    Label("Retry Access", systemImage: "arrow.clockwise")
+                }
+                Button {
+                    appVM.openPrivacySettings()
+                } label: {
+                    Label("Open Privacy Settings", systemImage: "gear")
                 }
             } else if node.url.pathExtension == "app" {
                 Button {
