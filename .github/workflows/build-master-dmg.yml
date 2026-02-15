@@ -11,11 +11,23 @@ permissions:
 
 jobs:
   build-dmg:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Select Xcode 26.2
+        run: |
+          xcode_app="$(ls -1d /Applications/Xcode_26.2*.app 2>/dev/null | sort -V | tail -n 1)"
+          if [[ -z "$xcode_app" ]]; then
+            echo "::error::Xcode 26.2 is not available on this runner."
+            ls -1 /Applications | grep '^Xcode' || true
+            exit 1
+          fi
+
+          sudo xcode-select -s "$xcode_app/Contents/Developer"
+          xcodebuild -version
 
       - name: Make CI scripts executable
         run: chmod +x scripts/ci/*.sh
