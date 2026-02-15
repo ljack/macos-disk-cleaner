@@ -5,6 +5,7 @@ struct MainWindowView: View {
 
     var body: some View {
         @Bindable var appVM = appVM
+        @Bindable var uninstallerVM = appVM.uninstallerVM
 
         NavigationSplitView {
             SidebarView()
@@ -17,6 +18,9 @@ struct MainWindowView: View {
         .sheet(isPresented: $appVM.showingDeleteConfirmation) {
             ConfirmationSheet()
         }
+        .sheet(isPresented: $uninstallerVM.showingUninstallConfirmation) {
+            UninstallConfirmationSheet()
+        }
         .onChange(of: appVM.scanVM.isScanning) { wasScanning, isScanning in
             if wasScanning && !isScanning && appVM.scanVM.scanResult != nil {
                 appVM.onScanComplete()
@@ -26,10 +30,21 @@ struct MainWindowView: View {
 
     @ViewBuilder
     private var detailContent: some View {
+        switch appVM.selectedSidebarItem {
+        case .apps:
+            AppListView()
+        case .suggestion(let category):
+            SuggestionsListView(category: category)
+        case .disk, nil:
+            diskContent
+        }
+    }
+
+    @ViewBuilder
+    private var diskContent: some View {
         let hasResults = appVM.scanVM.rootNode != nil
 
         if hasResults {
-            // Show results in chosen view mode
             switch appVM.viewMode {
             case .list:
                 FileTreeView(root: appVM.scanVM.rootNode!)
@@ -39,7 +54,6 @@ struct MainWindowView: View {
                 }
             }
         } else {
-            // Empty state — prominent hero scan button
             VStack {
                 Spacer()
                 ScanButtonView(style: .hero)

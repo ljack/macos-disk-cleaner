@@ -34,6 +34,12 @@
 		A10000010000000000000025 /* URLExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025; };
 		A10000010000000000000026 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000026; };
 		A10000010000000000000027 /* ScanButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000028; };
+		A10000010000000000000030 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000030; };
+		A10000010000000000000031 /* AppDiscoveryEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031; };
+		A10000010000000000000032 /* AppUninstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032; };
+		A10000010000000000000033 /* AppListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033; };
+		A10000010000000000000034 /* AppDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034; };
+		A10000010000000000000035 /* UninstallConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +71,12 @@
 		A20000010000000000000026 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000010000000000000027 /* DiskCleaner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DiskCleaner.entitlements; sourceTree = "<group>"; };
 		A20000010000000000000028 /* ScanButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanButtonView.swift; sourceTree = "<group>"; };
+		A20000010000000000000030 /* InstalledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
+		A20000010000000000000031 /* AppDiscoveryEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDiscoveryEngine.swift; sourceTree = "<group>"; };
+		A20000010000000000000032 /* AppUninstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUninstallerViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000033 /* AppListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppListView.swift; sourceTree = "<group>"; };
+		A20000010000000000000034 /* AppDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDetailView.swift; sourceTree = "<group>"; };
+		A20000010000000000000035 /* UninstallConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UninstallConfirmationSheet.swift; sourceTree = "<group>"; };
 		A30000010000000000000001 /* DiskCleaner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiskCleaner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -118,6 +130,7 @@
 				A20000010000000000000003 /* ScanResult.swift */,
 				A20000010000000000000004 /* SpaceWaster.swift */,
 				A20000010000000000000005 /* DiskAccessMode.swift */,
+				A20000010000000000000030 /* InstalledApp.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -129,6 +142,7 @@
 				A20000010000000000000007 /* SuggestionsEngine.swift */,
 				A20000010000000000000008 /* DeletionService.swift */,
 				A20000010000000000000009 /* PermissionService.swift */,
+				A20000010000000000000031 /* AppDiscoveryEngine.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -139,6 +153,7 @@
 				A20000010000000000000010 /* AppViewModel.swift */,
 				A20000010000000000000011 /* ScanViewModel.swift */,
 				A20000010000000000000012 /* SuggestionsViewModel.swift */,
+				A20000010000000000000032 /* AppUninstallerViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -152,6 +167,7 @@
 				A50000010000000000000007 /* TreeView */,
 				A50000010000000000000008 /* TreemapView */,
 				A50000010000000000000009 /* Suggestions */,
+				A50000010000000000000013 /* Apps */,
 				A50000010000000000000012 /* Shared */,
 			);
 			path = Views;
@@ -181,6 +197,16 @@
 				A20000010000000000000020 /* SuggestionsListView.swift */,
 			);
 			path = Suggestions;
+			sourceTree = "<group>";
+		};
+		A50000010000000000000013 /* Apps */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000033 /* AppListView.swift */,
+				A20000010000000000000034 /* AppDetailView.swift */,
+				A20000010000000000000035 /* UninstallConfirmationSheet.swift */,
+			);
+			path = Apps;
 			sourceTree = "<group>";
 		};
 		A50000010000000000000010 /* Algorithms */ = {
@@ -305,6 +331,12 @@
 				A10000010000000000000024 /* FileTypeClassifier.swift in Sources */,
 				A10000010000000000000025 /* URLExtensions.swift in Sources */,
 				A10000010000000000000027 /* ScanButtonView.swift in Sources */,
+				A10000010000000000000030 /* InstalledApp.swift in Sources */,
+				A10000010000000000000031 /* AppDiscoveryEngine.swift in Sources */,
+				A10000010000000000000032 /* AppUninstallerViewModel.swift in Sources */,
+				A10000010000000000000033 /* AppListView.swift in Sources */,
+				A10000010000000000000034 /* AppDetailView.swift in Sources */,
+				A10000010000000000000035 /* UninstallConfirmationSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

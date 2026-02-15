@@ -23,6 +23,25 @@ struct SidebarView: View {
                 .tag(SidebarItem.disk)
             }
 
+            Section("Applications") {
+                Label {
+                    HStack {
+                        Text("App Uninstaller")
+                        Spacer()
+                        if !appVM.uninstallerVM.apps.isEmpty {
+                            Text("\(appVM.uninstallerVM.apps.count)")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.fill.tertiary, in: Capsule())
+                        }
+                    }
+                } icon: {
+                    Image(systemName: "trash.square")
+                }
+                .tag(SidebarItem.apps)
+            }
+
             Section("Smart Suggestions") {
                 if appVM.suggestionsVM.isDetecting {
                     HStack {

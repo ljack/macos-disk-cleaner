@@ -16,6 +16,7 @@ enum ViewMode: String, CaseIterable {
 /// Sidebar navigation items
 enum SidebarItem: Hashable {
     case disk
+    case apps
     case suggestion(SpaceWasterCategory)
 }
 
@@ -24,6 +25,7 @@ enum SidebarItem: Hashable {
 final class AppViewModel {
     let scanVM = ScanViewModel()
     let suggestionsVM = SuggestionsViewModel()
+    let uninstallerVM = AppUninstallerViewModel()
     let deletionService = DeletionService()
 
     var accessMode: DiskAccessMode = .userDirectory
@@ -134,6 +136,12 @@ final class AppViewModel {
                 }
             }
         }
+    }
+
+    // MARK: - App Uninstall
+
+    func performAppUninstall() {
+        uninstallerVM.performUninstall(using: deletionService)
     }
 
     // MARK: - Treemap navigation
