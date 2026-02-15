@@ -23,9 +23,6 @@ trap cleanup EXIT
 # -D is the BSD/macOS base64 decode flag)
 printf '%s' "$APPLE_CERTIFICATE_BASE64" | base64 -D > "$CERT_FILE"
 
-echo "Decoded certificate: $(wc -c < "$CERT_FILE") bytes"
-echo "File header (hex): $(xxd -l 4 -p "$CERT_FILE")"
-
 # Create and configure temporary keychain
 security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
 security set-keychain-settings -lut 21600 "$KEYCHAIN_NAME"
