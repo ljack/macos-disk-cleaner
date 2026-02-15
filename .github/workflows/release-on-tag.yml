@@ -31,9 +31,19 @@ jobs:
       - name: Make CI scripts executable
         run: chmod +x scripts/ci/*.sh
 
+      - name: Import signing certificate
+        if: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' }}
+        id: cert
+        run: scripts/ci/import_certificate.sh
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
       - name: Build Release app
         id: build
         run: scripts/ci/build_release_app.sh
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Package DMG and checksum
         id: package
@@ -47,6 +57,27 @@ jobs:
           shasum -a 256 "$dmg_path" > "${dmg_path}.sha256"
 
           echo "dmg_path=$dmg_path" >> "$GITHUB_OUTPUT"
+        env:
+          CODE_SIGN_IDENTITY: ${{ secrets.APPLE_TEAM_ID != '' && 'Developer ID Application' || '' }}
+
+      - name: Notarize DMG
+        if: ${{ secrets.APPLE_ID != '' }}
+        run: scripts/ci/notarize.sh "${{ steps.package.outputs.dmg_path }}"
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+
+      - name: Regenerate checksum after notarization
+        if: ${{ secrets.APPLE_ID != '' }}
+        run: shasum -a 256 "${{ steps.package.outputs.dmg_path }}" > "${{ steps.package.outputs.dmg_path }}.sha256"
+
+      - name: Clean up keychain
+        if: always()
+        run: |
+          if security list-keychains -d user | grep -q "build.keychain-db"; then
+            security delete-keychain build.keychain-db
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -28,6 +28,12 @@ hdiutil create \
   -format UDZO \
   "$DMG_PATH"
 
+# Sign the DMG if a signing identity is available
+if [[ -n "${CODE_SIGN_IDENTITY:-}" ]]; then
+  echo "Signing DMG with: $CODE_SIGN_IDENTITY"
+  codesign --force --sign "$CODE_SIGN_IDENTITY" --timestamp "$DMG_PATH"
+fi
+
 echo "Created DMG: $DMG_PATH"
 
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then

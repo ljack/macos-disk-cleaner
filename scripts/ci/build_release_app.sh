@@ -12,13 +12,31 @@ if [[ ! -d "$PROJECT_PATH" ]]; then
   exit 1
 fi
 
+# Build with code signing when DEVELOPMENT_TEAM is set, otherwise unsigned
+SIGNING_ARGS=()
+if [[ -n "${DEVELOPMENT_TEAM:-}" ]]; then
+  CODE_SIGN_IDENTITY="${CODE_SIGN_IDENTITY:-Developer ID Application}"
+  echo "Code signing enabled (team: $DEVELOPMENT_TEAM, identity: $CODE_SIGN_IDENTITY)"
+  SIGNING_ARGS+=(
+    CODE_SIGNING_ALLOWED=YES
+    CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY"
+    DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
+    CODE_SIGN_STYLE=Manual
+    OTHER_CODE_SIGN_FLAGS=--timestamp
+    CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO
+  )
+else
+  echo "Code signing disabled (set DEVELOPMENT_TEAM to enable)"
+  SIGNING_ARGS+=(CODE_SIGNING_ALLOWED=NO)
+fi
+
 echo "Building scheme '$SCHEME' ($CONFIGURATION)..."
 xcodebuild \
   -project "$PROJECT_PATH" \
   -scheme "$SCHEME" \
   -configuration "$CONFIGURATION" \
   -derivedDataPath "$DERIVED_DATA_PATH" \
-  CODE_SIGNING_ALLOWED=NO \
+  "${SIGNING_ARGS[@]}" \
   clean build
 
 APP_PATH="$DERIVED_DATA_PATH/Build/Products/$CONFIGURATION/${SCHEME}.app"
