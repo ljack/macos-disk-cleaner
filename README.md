@@ -61,6 +61,10 @@ See `PROMPT-DEV.md` for the concept walkthrough.
 - PromptDev index: `promptdev/00-index.md`
 - Prompt chain: `promptdev/03-prompt-chain.md`
 
+## Download
+
+[Download DiskCleaner v0.9.0](https://github.com/ljack/macos-disk-cleaner/releases/download/v0.9.0/DiskCleaner-v0.9.0.dmg)
+
 ## Screenshot
 
 ![DiskCleaner first launch](screesnhots/first-launch.png)
