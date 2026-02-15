@@ -31,6 +31,7 @@ final class AppViewModel {
     let suggestionsVM = SuggestionsViewModel()
     let uninstallerVM = AppUninstallerViewModel()
     let deletionService = DeletionService()
+    let diskSpaceHistory = DiskSpaceHistory()
 
     var accessMode: DiskAccessMode = .userDirectory
     var viewMode: ViewMode = .list
@@ -60,6 +61,9 @@ final class AppViewModel {
 
     // Selection for deletion
     var selectedNodes: Set<FileNode> = []
+
+    // Disk space history popover
+    var showingDiskSpaceHistory = false
 
     // Deletion confirmation
     var showingDeleteConfirmation = false
@@ -390,5 +394,6 @@ final class AppViewModel {
         let total = Int64(values.volumeTotalCapacity ?? 0)
         let free = Int64(values.volumeAvailableCapacityForImportantUsage ?? 0)
         diskSpaceInfo = (total: total, free: free, used: total - free)
+        diskSpaceHistory.record(freeBytes: free)
     }
 }

@@ -44,11 +44,11 @@ struct ToolbarView: ToolbarContent {
             }
         }
 
-        // Disk space bar (click to refresh)
+        // Disk space bar (click to show history)
         ToolbarItem(placement: .status) {
             if let info = appVM.diskSpaceInfo {
                 Button {
-                    appVM.refreshDiskSpace()
+                    appVM.showingDiskSpaceHistory.toggle()
                 } label: {
                     HStack(spacing: 6) {
                         GeometryReader { geo in
@@ -69,7 +69,16 @@ struct ToolbarView: ToolbarContent {
                     }
                 }
                 .buttonStyle(.plain)
-                .help("Click to refresh disk space")
+                .help("Click to show disk space history")
+                .popover(isPresented: Bindable(appVM).showingDiskSpaceHistory) {
+                    DiskSpaceHistoryView(
+                        history: appVM.diskSpaceHistory,
+                        currentFree: info.free
+                    )
+                    .onAppear {
+                        appVM.refreshDiskSpace()
+                    }
+                }
             }
         }
     }
