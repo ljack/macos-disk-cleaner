@@ -35,11 +35,18 @@ final class AppViewModel {
     let deletionService = DeletionService()
     let diskSpaceHistory = DiskSpaceHistory()
     let exclusionStore = DirectoryExclusionStore()
+    let bookmarkService = BookmarkService()
 
-    var accessMode: DiskAccessMode = .userDirectory
+    /// The URL of the currently selected scan root (from NSOpenPanel or restored bookmark)
+    var scanRootURL: URL?
+
+    /// Display name for the current scan root
+    var scanRootName: String {
+        scanRootURL?.lastPathComponent ?? "No folder selected"
+    }
+
     var viewMode: ViewMode = .list
     var selectedSidebarItem: SidebarItem? = .disk
-    var hasFullDiskAccess: Bool = false
 
     // Auto-scan settings (persisted via UserDefaults)
     var autoScanEnabled: Bool {
@@ -85,9 +92,12 @@ final class AppViewModel {
     }
 
     init() {
-        hasFullDiskAccess = PermissionService.hasFullDiskAccess()
         loadTrashHistory()
         refreshDiskSpace()
+        // Try to restore the most recently used scan location
+        if let restored = bookmarkService.restoreMostRecent() {
+            scanRootURL = restored
+        }
     }
 
     private func loadTrashHistory() {
@@ -186,14 +196,37 @@ final class AppViewModel {
         hiddenNodes.removeAll()
     }
 
+    // MARK: - Scan Root Selection
+
+    /// Present NSOpenPanel for the user to choose a scan folder.
+    /// Saves a security-scoped bookmark and starts scanning.
+    func chooseScanFolder() {
+        guard let url = PermissionService.chooseScanFolder(startingAt: scanRootURL) else { return }
+        bookmarkService.saveBookmark(for: url)
+        scanRootURL = url
+        startScan()
+    }
+
+    /// Switch to a previously saved scan location.
+    func switchToSavedLocation(_ location: BookmarkService.SavedLocation) {
+        guard let url = bookmarkService.restoreBookmark(for: location) else { return }
+        scanRootURL = url
+        startScan()
+    }
+
     func startScan() {
+        guard let rootURL = scanRootURL else {
+            chooseScanFolder()
+            return
+        }
+
         treemapRoot = nil
         selectedNodes.removeAll()
         hiddenNodes.removeAll()
         showPermissionsBanner = false
         scanVM.startScan(
-            mode: accessMode,
-            exclusionRules: exclusionStore.activeScanRules(for: accessMode)
+            rootURL: rootURL,
+            exclusionRules: exclusionStore.activeScanRules()
         )
     }
 
@@ -225,13 +258,13 @@ final class AppViewModel {
         exclusionStore.rule(by: id)
     }
 
-    func addExclusionRule(for node: FileNode, remainingScans: Int, scope: ExclusionRuleScope) {
+    func addExclusionRule(for node: FileNode, remainingScans: Int) {
         guard node.isDirectory else { return }
-        exclusionStore.upsertRule(for: node.url, remainingScans: remainingScans, scope: scope)
+        exclusionStore.upsertRule(for: node.url, remainingScans: remainingScans)
     }
 
-    func addExclusionRule(for directoryURL: URL, remainingScans: Int, scope: ExclusionRuleScope) {
-        exclusionStore.upsertRule(for: directoryURL, remainingScans: remainingScans, scope: scope)
+    func addExclusionRule(for directoryURL: URL, remainingScans: Int) {
+        exclusionStore.upsertRule(for: directoryURL, remainingScans: remainingScans)
     }
 
     func removeExclusionRule(id: UUID) {
@@ -252,34 +285,15 @@ final class AppViewModel {
         !scanVM.restrictedDirectories.isEmpty
     }
 
+    /// Grant access to a restricted directory via NSOpenPanel
     func grantAccessToDirectory(_ node: FileNode) {
-        scanVM.rescanDirectory(node)
+        guard let grantedURL = PermissionService.grantAccessToDirectory(at: node.url) else { return }
+        scanVM.rescanDirectory(node, grantedURL: grantedURL)
     }
 
     func retryDeniedDirectory(_ node: FileNode) {
         node.isPermissionDenied = false
-        node.awaitingPermission = true
-        scanVM.rescanDirectory(node)
-    }
-
-    func openPrivacySettings() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
-    /// Toggle access mode, checking FDA if needed
-    func toggleAccessMode() {
-        if accessMode == .userDirectory {
-            if PermissionService.hasFullDiskAccess() {
-                accessMode = .fullDisk
-                hasFullDiskAccess = true
-            } else {
-                PermissionService.openFullDiskAccessSettings()
-            }
-        } else {
-            accessMode = .userDirectory
-        }
+        grantAccessToDirectory(node)
     }
 
     // MARK: - Deletion

@@ -8,7 +8,6 @@ final class SuggestionsViewModel {
     var isDetecting = false
 
     private let engine = SuggestionsEngine()
-    private var detectTask: Task<Void, Never>?
 
     var totalWastedSpace: Int64 {
         suggestions.reduce(0) { $0 + $1.size }
@@ -19,25 +18,18 @@ final class SuggestionsViewModel {
     }
 
     func detect(scanRoot: FileNode?) {
-        detectTask?.cancel()
         isDetecting = true
 
-        detectTask = Task {
-            // Tree walk on MainActor (fast, in-memory) — avoids cross-actor FileNode access
-            let nodeModules = scanRoot.map { self.findNodeModules(in: $0) } ?? []
-            guard !Task.isCancelled else { return }
+        // Tree-based analysis: find known wasters + node_modules from the scanned tree
+        let knownWasters = engine.detectFromTree(root: scanRoot)
+        let nodeModules = scanRoot.map { findNodeModules(in: $0) } ?? []
 
-            let fsResults = await engine.detectFilesystemWasters()
-            guard !Task.isCancelled else { return }
-            self.suggestions = (fsResults + nodeModules).sorted { $0.size > $1.size }
-            self.isDetecting = false
-        }
+        suggestions = (knownWasters + nodeModules).sorted { $0.size > $1.size }
+        isDetecting = false
     }
 
     /// Recursively find node_modules directories in the scanned tree.
-    /// Runs on MainActor so FileNode reads are safe. Checks cancellation per directory.
     private func findNodeModules(in node: FileNode) -> [SpaceWaster] {
-        guard !Task.isCancelled else { return [] }
         guard !node.isTrashed && !node.isHidden else { return [] }
 
         if node.isDirectory && node.name == "node_modules" {
@@ -51,7 +43,6 @@ final class SuggestionsViewModel {
 
         var results: [SpaceWaster] = []
         for child in node.children where child.isDirectory {
-            if Task.isCancelled { break }
             results.append(contentsOf: findNodeModules(in: child))
         }
         return results

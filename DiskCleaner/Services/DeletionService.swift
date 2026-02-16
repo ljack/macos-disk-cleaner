@@ -1,18 +1,15 @@
 import AppKit
 
-/// Service for moving files to Trash via NSWorkspace (undoable deletion).
+/// Service for moving files to Trash via FileManager (undoable deletion).
+/// Works in App Sandbox when the security-scoped resource for the file's
+/// parent directory is active (via NSOpenPanel grant or bookmark).
 actor DeletionService {
     /// Move URLs to Trash. Returns the new Trash URLs for each item.
     func moveToTrash(urls: [URL]) async throws -> [URL] {
-        // NSWorkspace.recycle is main-actor bound, so call on main
         try await MainActor.run {
             var trashedURLs: [URL] = []
             for url in urls {
                 var resultURL: NSURL?
-                try NSWorkspace.shared.recycle([url], completionHandler: { trashedItems, error in
-                    // This is synchronous in practice for small batches
-                })
-                // Use the synchronous approach
                 try FileManager.default.trashItem(at: url, resultingItemURL: &resultURL)
                 if let trashed = resultURL as URL? {
                     trashedURLs.append(trashed)
@@ -33,6 +30,8 @@ actor DeletionService {
     }
 
     /// Restore an item from Trash to its original location.
+    /// Note: In sandbox, restore only works within the same app session since
+    /// access to the Trash URL may not persist across launches.
     func restoreFromTrash(trashURL: URL, to originalURL: URL) async throws {
         try await MainActor.run {
             // Ensure parent directory exists

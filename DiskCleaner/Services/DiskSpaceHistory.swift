@@ -120,27 +120,22 @@ final class DirectoryExclusionStore {
         return rules.first { $0.id == id }
     }
 
-    func upsertRule(for directoryURL: URL, remainingScans: Int, scope: ExclusionRuleScope) {
+    func upsertRule(for directoryURL: URL, remainingScans: Int) {
         let normalizedPath = Self.normalizePath(directoryURL)
         guard !normalizedPath.isEmpty else { return }
 
         if let index = rules.firstIndex(where: {
-            $0.normalizedPath == normalizedPath && $0.scope == scope
+            $0.normalizedPath == normalizedPath
         }) {
             rules[index].remainingScans = max(0, remainingScans)
         } else {
             let rule = ExcludedDirectoryRule(
                 path: normalizedPath,
-                remainingScans: remainingScans,
-                scope: scope
+                remainingScans: remainingScans
             )
             rules.append(rule)
         }
         save()
-    }
-
-    func upsertRule(path: String, remainingScans: Int, scope: ExclusionRuleScope) {
-        upsertRule(for: URL(fileURLWithPath: path), remainingScans: remainingScans, scope: scope)
     }
 
     func removeRule(id: UUID) {
@@ -154,9 +149,9 @@ final class DirectoryExclusionStore {
         save()
     }
 
-    func activeScanRules(for mode: DiskAccessMode) -> [ScanExclusionRule] {
+    func activeScanRules() -> [ScanExclusionRule] {
         rules
-            .filter { $0.isActive && $0.scope.applies(to: mode) }
+            .filter(\.isActive)
             .map { ScanExclusionRule(id: $0.id, normalizedPath: $0.normalizedPath) }
     }
 

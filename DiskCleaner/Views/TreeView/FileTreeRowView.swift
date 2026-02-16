@@ -162,12 +162,7 @@ struct FileTreeRowView: View {
                 Button {
                     appVM.retryDeniedDirectory(node)
                 } label: {
-                    Label("Retry Access", systemImage: "arrow.clockwise")
-                }
-                Button {
-                    appVM.openPrivacySettings()
-                } label: {
-                    Label("Open Privacy Settings", systemImage: "gear")
+                    Label("Grant Access", systemImage: "folder.badge.plus")
                 }
             } else if node.url.pathExtension == "app" {
                 Button {
@@ -176,39 +171,17 @@ struct FileTreeRowView: View {
                     Label("Uninstall \(node.url.deletingPathExtension().lastPathComponent)...", systemImage: "trash")
                 }
                 Menu("Auto-Exclude Directory") {
-                    Button("1 scan (\(appVM.accessMode.rawValue))") {
-                        appVM.addExclusionRule(
-                            for: node,
-                            remainingScans: 1,
-                            scope: ExclusionRuleScope.currentMode(appVM.accessMode)
-                        )
+                    Button("1 scan") {
+                        appVM.addExclusionRule(for: node, remainingScans: 1)
                     }
-                    Button("3 scans (\(appVM.accessMode.rawValue))") {
-                        appVM.addExclusionRule(
-                            for: node,
-                            remainingScans: 3,
-                            scope: ExclusionRuleScope.currentMode(appVM.accessMode)
-                        )
+                    Button("3 scans") {
+                        appVM.addExclusionRule(for: node, remainingScans: 3)
                     }
-                    Button("5 scans (\(appVM.accessMode.rawValue))") {
-                        appVM.addExclusionRule(
-                            for: node,
-                            remainingScans: 5,
-                            scope: ExclusionRuleScope.currentMode(appVM.accessMode)
-                        )
+                    Button("5 scans") {
+                        appVM.addExclusionRule(for: node, remainingScans: 5)
                     }
                     Divider()
-                    Button("1 scan (All Scan Modes)") {
-                        appVM.addExclusionRule(for: node, remainingScans: 1, scope: .allModes)
-                    }
-                    Button("3 scans (All Scan Modes)") {
-                        appVM.addExclusionRule(for: node, remainingScans: 3, scope: .allModes)
-                    }
-                    Button("5 scans (All Scan Modes)") {
-                        appVM.addExclusionRule(for: node, remainingScans: 5, scope: .allModes)
-                    }
-                    Divider()
-                    Button("Manage Exclusions…") {
+                    Button("Manage Exclusions...") {
                         appVM.openExclusionsManager()
                     }
                 }
@@ -220,39 +193,17 @@ struct FileTreeRowView: View {
             } else if !node.awaitingPermission {
                 if node.isDirectory {
                     Menu("Auto-Exclude Directory") {
-                        Button("1 scan (\(appVM.accessMode.rawValue))") {
-                            appVM.addExclusionRule(
-                                for: node,
-                                remainingScans: 1,
-                                scope: ExclusionRuleScope.currentMode(appVM.accessMode)
-                            )
+                        Button("1 scan") {
+                            appVM.addExclusionRule(for: node, remainingScans: 1)
                         }
-                        Button("3 scans (\(appVM.accessMode.rawValue))") {
-                            appVM.addExclusionRule(
-                                for: node,
-                                remainingScans: 3,
-                                scope: ExclusionRuleScope.currentMode(appVM.accessMode)
-                            )
+                        Button("3 scans") {
+                            appVM.addExclusionRule(for: node, remainingScans: 3)
                         }
-                        Button("5 scans (\(appVM.accessMode.rawValue))") {
-                            appVM.addExclusionRule(
-                                for: node,
-                                remainingScans: 5,
-                                scope: ExclusionRuleScope.currentMode(appVM.accessMode)
-                            )
+                        Button("5 scans") {
+                            appVM.addExclusionRule(for: node, remainingScans: 5)
                         }
                         Divider()
-                        Button("1 scan (All Scan Modes)") {
-                            appVM.addExclusionRule(for: node, remainingScans: 1, scope: .allModes)
-                        }
-                        Button("3 scans (All Scan Modes)") {
-                            appVM.addExclusionRule(for: node, remainingScans: 3, scope: .allModes)
-                        }
-                        Button("5 scans (All Scan Modes)") {
-                            appVM.addExclusionRule(for: node, remainingScans: 5, scope: .allModes)
-                        }
-                        Divider()
-                        Button("Manage Exclusions…") {
+                        Button("Manage Exclusions...") {
                             appVM.openExclusionsManager()
                         }
                     }

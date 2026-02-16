@@ -36,7 +36,7 @@ enum ScanStatus: Equatable {
 
     var subtitle: String? {
         switch self {
-        case .readyToScan:    return "Analyze your disk usage"
+        case .readyToScan:    return "Choose a folder to analyze"
         case .scanning:       return nil // shown by progress overlay
         case .complete:       return "Results are fresh"
         case .resultsAging:   return "Consider rescanning"
@@ -70,7 +70,7 @@ final class ScanViewModel {
     var errorMessage: String?
     private(set) var wasCancelled = false
 
-    /// TCC-protected directories that were skipped during scan
+    /// Directories where access was denied during scan
     var restrictedDirectories: [FileNode] = []
     var isResolvingDirectory = false
     var resolvingDirectoryName: String?
@@ -108,7 +108,7 @@ final class ScanViewModel {
         }
     }
 
-    func startScan(mode: DiskAccessMode, exclusionRules: [ScanExclusionRule]) {
+    func startScan(rootURL: URL, exclusionRules: [ScanExclusionRule]) {
         guard !isScanning else { return }
 
         isScanning = true
@@ -119,29 +119,27 @@ final class ScanViewModel {
         restrictedDirectories = []
 
         let startTime = Date()
-        let rootURL = mode.rootURL
-        let homeURL = FileManager.default.homeDirectoryForCurrentUser
 
         scanTask = Task { [weak self] in
             guard let self else { return }
             do {
                 let result = try await self.engine.scan(
                     root: rootURL,
-                    homeURL: homeURL,
                     exclusionRules: exclusionRules
                 ) { [weak self] progress in
                     self?.progress = progress
                 }
 
                 let duration = Date().timeIntervalSince(startTime)
-                self.restrictedDirectories = result.pendingDirectories
+                // Collect any permission-denied directories
+                self.restrictedDirectories = self.collectDeniedDirectories(in: result.root)
                 self.scanResult = ScanResult(
                     root: result.root,
                     scanDate: Date(),
                     duration: duration,
                     totalFiles: self.progress?.filesScanned ?? 0,
                     totalDirectories: self.progress?.directoriesScanned ?? 0,
-                    accessMode: mode,
+                    scanRootPath: rootURL.path,
                     matchedExclusionRuleIDs: result.matchedExclusionRuleIDs
                 )
                 self.isScanning = false
@@ -155,8 +153,8 @@ final class ScanViewModel {
         }
     }
 
-    /// Rescan a single TCC-protected directory after user grants access
-    func rescanDirectory(_ node: FileNode) {
+    /// Rescan a single directory after user grants access via NSOpenPanel
+    func rescanDirectory(_ node: FileNode, grantedURL: URL) {
         rescanTask?.cancel()
         isResolvingDirectory = true
         resolvingDirectoryName = node.name
@@ -166,7 +164,7 @@ final class ScanViewModel {
 
         rescanTask = Task {
             do {
-                let scannedNode = try await engine.scanSubtree(at: node.url) { _ in }
+                let scannedNode = try await engine.scanSubtree(at: grantedURL) { _ in }
                 guard generation == self.rescanGeneration else { return }
 
                 // Transplant children from scanned result into existing node
@@ -186,13 +184,12 @@ final class ScanViewModel {
                 self.resolvingDirectoryName = nil
                 self.rescanTask = nil
             } catch is CancellationError {
-                // Cancelled by a newer rescanDirectory call — don't touch shared state
+                // Cancelled by a newer rescanDirectory call
             } catch {
                 guard generation == self.rescanGeneration else { return }
                 node.awaitingPermission = false
                 node.isPermissionDenied = true
 
-                // Keep in restricted list but update state
                 self.isResolvingDirectory = false
                 self.resolvingDirectoryName = nil
                 self.rescanTask = nil
@@ -203,5 +200,17 @@ final class ScanViewModel {
     func stopScan() {
         scanTask?.cancel()
         scanTask = nil
+    }
+
+    /// Walk the tree to find directories marked as permission denied
+    private func collectDeniedDirectories(in node: FileNode) -> [FileNode] {
+        var denied: [FileNode] = []
+        if node.isPermissionDenied && node.parent != nil {
+            denied.append(node)
+        }
+        for child in node.children {
+            denied.append(contentsOf: collectDeniedDirectories(in: child))
+        }
+        return denied
     }
 }

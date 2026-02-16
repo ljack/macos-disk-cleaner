@@ -1,6 +1,7 @@
 import Foundation
 
 /// Scope for a temporary directory-exclusion rule.
+/// Kept for backward compatibility with persisted rules — all scopes now apply to every scan.
 enum ExclusionRuleScope: String, Codable, CaseIterable, Identifiable {
     case allModes
     case userDirectoryOnly
@@ -11,31 +12,11 @@ enum ExclusionRuleScope: String, Codable, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .allModes:
-            return "All Scan Modes"
+            return "All Scans"
         case .userDirectoryOnly:
-            return "Home Directory Only"
+            return "All Scans"
         case .fullDiskOnly:
-            return "Full Disk Only"
-        }
-    }
-
-    func applies(to mode: DiskAccessMode) -> Bool {
-        switch self {
-        case .allModes:
-            return true
-        case .userDirectoryOnly:
-            return mode == .userDirectory
-        case .fullDiskOnly:
-            return mode == .fullDisk
-        }
-    }
-
-    static func currentMode(_ mode: DiskAccessMode) -> ExclusionRuleScope {
-        switch mode {
-        case .userDirectory:
-            return .userDirectoryOnly
-        case .fullDisk:
-            return .fullDiskOnly
+            return "All Scans"
         }
     }
 }
@@ -54,7 +35,7 @@ struct ExcludedDirectoryRule: Codable, Identifiable, Hashable {
         id: UUID = UUID(),
         path: String,
         remainingScans: Int,
-        scope: ExclusionRuleScope,
+        scope: ExclusionRuleScope = .allModes,
         createdAt: Date = Date(),
         lastMatchedAt: Date? = nil,
         totalMatches: Int = 0
@@ -90,7 +71,7 @@ struct ScanResult {
     let duration: TimeInterval
     let totalFiles: Int
     let totalDirectories: Int
-    let accessMode: DiskAccessMode
+    let scanRootPath: String
     let matchedExclusionRuleIDs: Set<UUID>
 
     var totalItems: Int { totalFiles + totalDirectories }

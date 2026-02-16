@@ -8,14 +8,6 @@ struct PermissionsView: View {
         appVM.scanVM.restrictedDirectories
     }
 
-    private var pendingDirs: [FileNode] {
-        restrictedDirs.filter { $0.awaitingPermission }
-    }
-
-    private var deniedDirs: [FileNode] {
-        restrictedDirs.filter { $0.isPermissionDenied }
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             // Header
@@ -36,36 +28,41 @@ struct PermissionsView: View {
 
             Divider()
 
-            // Directory list
-            List {
-                ForEach(restrictedDirs, id: \.id) { node in
-                    directoryRow(node)
+            if restrictedDirs.isEmpty {
+                VStack(spacing: 8) {
+                    Spacer()
+                    Image(systemName: "checkmark.shield.fill")
+                        .font(.system(size: 30))
+                        .foregroundStyle(.green)
+                    Text("All directories accessible")
+                        .foregroundStyle(.secondary)
+                    Spacer()
                 }
-            }
-            .listStyle(.inset)
+                .frame(maxWidth: .infinity)
+            } else {
+                // Directory list
+                List {
+                    ForEach(restrictedDirs, id: \.id) { node in
+                        directoryRow(node)
+                    }
+                }
+                .listStyle(.inset)
 
-            Divider()
+                Divider()
 
-            // Footer actions
-            HStack {
-                Spacer()
-                if !pendingDirs.isEmpty {
+                // Footer actions
+                HStack {
+                    Spacer()
                     Button {
-                        grantAllPending()
+                        grantAllRestricted()
                     } label: {
-                        Label("Grant All Pending", systemImage: "shield.checkered")
+                        Label("Grant All", systemImage: "shield.checkered")
                     }
                     .buttonStyle(.bordered)
                     .disabled(appVM.scanVM.isResolvingDirectory)
                 }
-                Button {
-                    appVM.openPrivacySettings()
-                } label: {
-                    Label("Open Settings", systemImage: "gear")
-                }
-                .buttonStyle(.bordered)
+                .padding()
             }
-            .padding()
         }
     }
 
@@ -88,82 +85,33 @@ struct PermissionsView: View {
 
             Spacer()
 
-            // State indicator
-            if node.awaitingPermission {
-                HStack(spacing: 6) {
-                    Image(systemName: "clock.fill")
-                        .foregroundStyle(.orange)
-                        .font(.caption)
-                    Text("Pending")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(.orange.opacity(0.1), in: Capsule())
-
-                Button("Grant Access") {
-                    appVM.grantAccessToDirectory(node)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .disabled(appVM.scanVM.isResolvingDirectory)
-            } else if node.isPermissionDenied {
+            if node.isPermissionDenied {
                 HStack(spacing: 6) {
                     Image(systemName: "lock.fill")
                         .foregroundStyle(.red)
                         .font(.caption)
-                    Text("Denied")
+                    Text("No Access")
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(.red.opacity(0.1), in: Capsule())
-
-                Button("Retry") {
-                    appVM.retryDeniedDirectory(node)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .disabled(appVM.scanVM.isResolvingDirectory)
-
-                Button {
-                    appVM.openPrivacySettings()
-                } label: {
-                    Image(systemName: "gear")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-            } else {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                        .font(.caption)
-                    Text("Granted")
-                        .font(.caption)
-                        .foregroundStyle(.green)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(.green.opacity(0.1), in: Capsule())
             }
+
+            Button("Grant Access") {
+                appVM.grantAccessToDirectory(node)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .disabled(appVM.scanVM.isResolvingDirectory)
         }
         .padding(.vertical, 4)
     }
 
-    private func grantAllPending() {
-        let pending = pendingDirs
-        Task {
-            for node in pending {
-                appVM.grantAccessToDirectory(node)
-                // Wait a moment between each to avoid overlapping TCC popups
-                do {
-                    try await Task.sleep(for: .milliseconds(500))
-                } catch {
-                    return
-                }
-            }
+    private func grantAllRestricted() {
+        for node in restrictedDirs {
+            appVM.grantAccessToDirectory(node)
         }
     }
 }
@@ -173,7 +121,6 @@ struct ExclusionsView: View {
 
     @State private var selectedDirectoryURL: URL?
     @State private var newRuleRemainingScans = 3
-    @State private var newRuleScope: ExclusionRuleScope = .allModes
 
     private var sortedRules: [ExcludedDirectoryRule] {
         appVM.exclusionRules.sorted { lhs, rhs in
@@ -194,11 +141,6 @@ struct ExclusionsView: View {
             addRulePanel
             Divider()
             rulesList
-        }
-        .onAppear {
-            if selectedDirectoryURL == nil {
-                newRuleScope = ExclusionRuleScope.currentMode(appVM.accessMode)
-            }
         }
     }
 
@@ -238,7 +180,7 @@ struct ExclusionsView: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Spacer()
-                Button("Choose Folder…") {
+                Button("Choose Folder...") {
                     chooseDirectory()
                 }
                 .buttonStyle(.bordered)
@@ -250,14 +192,6 @@ struct ExclusionsView: View {
                         .font(.caption)
                 }
                 .frame(maxWidth: 260, alignment: .leading)
-
-                Picker("Scope", selection: $newRuleScope) {
-                    ForEach(ExclusionRuleScope.allCases) { scope in
-                        Text(scope.label).tag(scope)
-                    }
-                }
-                .pickerStyle(.menu)
-                .labelsHidden()
 
                 Spacer()
 
@@ -281,7 +215,7 @@ struct ExclusionsView: View {
                     .foregroundStyle(.tertiary)
                 Text("No exclusion rules yet")
                     .foregroundStyle(.secondary)
-                Text("Use “Choose Folder…” to add a directory and how many successful scans to skip it.")
+                Text("Use \"Choose Folder...\" to add a directory and how many successful scans to skip it.")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                 Spacer()
@@ -316,11 +250,6 @@ struct ExclusionsView: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                 HStack(spacing: 8) {
-                    Text(rule.scope.label)
-                        .font(.caption2)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.fill.tertiary, in: Capsule())
                     Text("Matched \(rule.totalMatches)x")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
@@ -376,8 +305,7 @@ struct ExclusionsView: View {
         guard let directory = selectedDirectoryURL else { return }
         appVM.addExclusionRule(
             for: directory,
-            remainingScans: newRuleRemainingScans,
-            scope: newRuleScope
+            remainingScans: newRuleRemainingScans
         )
     }
 

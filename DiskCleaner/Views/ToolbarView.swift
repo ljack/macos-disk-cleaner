@@ -21,15 +21,28 @@ struct ToolbarView: ToolbarContent {
 
             Divider()
 
-            // Access mode
-            Button {
-                appVM.toggleAccessMode()
+            // Scan folder selector
+            Menu {
+                Button {
+                    appVM.chooseScanFolder()
+                } label: {
+                    Label("Choose Folder...", systemImage: "folder.badge.plus")
+                }
+
+                if !appVM.bookmarkService.savedLocations.isEmpty {
+                    Divider()
+                    ForEach(appVM.bookmarkService.savedLocations) { location in
+                        Button {
+                            appVM.switchToSavedLocation(location)
+                        } label: {
+                            Label(location.name, systemImage: "folder")
+                        }
+                    }
+                }
             } label: {
-                Label(appVM.accessMode.rawValue, systemImage: appVM.accessMode.icon)
+                Label(appVM.scanRootName, systemImage: "folder")
             }
-            .help(appVM.accessMode == .userDirectory
-                  ? "Scanning home directory. Click for full disk."
-                  : "Scanning full disk. Click for home directory only.")
+            .help("Choose which folder to scan")
 
             // Delete selected
             if !appVM.selectedNodes.isEmpty {

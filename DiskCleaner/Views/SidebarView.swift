@@ -23,7 +23,7 @@ struct SidebarView: View {
             Section("Disk") {
                 Label {
                     VStack(alignment: .leading) {
-                        Text(appVM.accessMode.rawValue)
+                        Text(appVM.scanRootName)
                         if let result = appVM.scanVM.scanResult {
                             Text(result.root.formattedSize)
                                 .font(.caption)
@@ -34,7 +34,7 @@ struct SidebarView: View {
                         }
                     }
                 } icon: {
-                    Image(systemName: appVM.accessMode.icon)
+                    Image(systemName: "folder")
                 }
                 .tag(SidebarItem.disk)
             }
