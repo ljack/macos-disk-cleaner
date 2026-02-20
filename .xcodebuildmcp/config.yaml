@@ -1,0 +1,5 @@
+schemaVersion: 1
+enabledWorkflows: ["macos", "ui-automation", "debugging", "logging"]
+sessionDefaults:
+  projectPath: /Users/jarkko/_dev/macos-disk-cleaner/DiskCleaner.xcodeproj
+  scheme: DiskCleaner
