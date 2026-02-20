@@ -49,7 +49,32 @@
 		A10000010000000000000042 /* DiskSpaceHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000042 /* DiskSpaceHistoryView.swift */; };
 		A10000010000000000000050 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000050 /* PrivacyInfo.xcprivacy */; };
 		A10000010000000000000051 /* BookmarkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000051 /* BookmarkService.swift */; };
+		T10000010000000000000001 /* FileNodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000001 /* FileNodeTests.swift */; };
+		T10000010000000000000002 /* FileTypeClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000002 /* FileTypeClassifierTests.swift */; };
+		T10000010000000000000003 /* SquarifiedTreemapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000003 /* SquarifiedTreemapTests.swift */; };
+		T10000010000000000000004 /* ExcludedDirectoryRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000004 /* ExcludedDirectoryRuleTests.swift */; };
+		T10000010000000000000005 /* ScanStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000005 /* ScanStatusTests.swift */; };
+		T10000010000000000000006 /* SpaceWasterCategoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000006 /* SpaceWasterCategoryTests.swift */; };
+		T10000010000000000000007 /* SuggestionsEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000007 /* SuggestionsEngineTests.swift */; };
+		T10000010000000000000008 /* SuggestionsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000008 /* SuggestionsViewModelTests.swift */; };
+		T10000010000000000000009 /* DirectoryExclusionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000009 /* DirectoryExclusionStoreTests.swift */; };
+		T10000010000000000000010 /* AppUninstallerViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000010 /* AppUninstallerViewModelTests.swift */; };
+		T10000010000000000000011 /* ScanViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000011 /* ScanViewModelTests.swift */; };
+		T10000010000000000000012 /* DiskSpaceHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000012 /* DiskSpaceHistoryTests.swift */; };
+		T10000010000000000000013 /* MockDeletionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000013 /* MockDeletionService.swift */; };
+		T10000010000000000000014 /* FileNodeBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000014 /* FileNodeBuilder.swift */; };
+		T10000010000000000000015 /* MockSandboxAccessProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000015 /* MockSandboxAccessProvider.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		T80000010000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A90000010000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A60000010000000000000001;
+			remoteInfo = DiskCleaner;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A20000010000000000000001 /* DiskCleanerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskCleanerApp.swift; sourceTree = "<group>"; };
@@ -96,10 +121,33 @@
 		A20000010000000000000050 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A20000010000000000000051 /* BookmarkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkService.swift; sourceTree = "<group>"; };
 		A30000010000000000000001 /* DiskCleaner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiskCleaner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		T20000010000000000000001 /* FileNodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileNodeTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000002 /* FileTypeClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTypeClassifierTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000003 /* SquarifiedTreemapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SquarifiedTreemapTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000004 /* ExcludedDirectoryRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedDirectoryRuleTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000005 /* ScanStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStatusTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000006 /* SpaceWasterCategoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceWasterCategoryTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000007 /* SuggestionsEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsEngineTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000008 /* SuggestionsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsViewModelTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000009 /* DirectoryExclusionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryExclusionStoreTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000010 /* AppUninstallerViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUninstallerViewModelTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000011 /* ScanViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanViewModelTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000012 /* DiskSpaceHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskSpaceHistoryTests.swift; sourceTree = "<group>"; };
+		T20000010000000000000013 /* MockDeletionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeletionService.swift; sourceTree = "<group>"; };
+		T20000010000000000000014 /* FileNodeBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileNodeBuilder.swift; sourceTree = "<group>"; };
+		T20000010000000000000015 /* MockSandboxAccessProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSandboxAccessProvider.swift; sourceTree = "<group>"; };
+		T30000010000000000000001 /* DiskCleanerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DiskCleanerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A40000010000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		T40000010000000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -113,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				A50000010000000000000002 /* DiskCleaner */,
+				T50000010000000000000001 /* DiskCleanerTests */,
 				A50000010000000000000099 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -259,8 +308,47 @@
 			isa = PBXGroup;
 			children = (
 				A30000010000000000000001 /* DiskCleaner.app */,
+				T30000010000000000000001 /* DiskCleanerTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		T50000010000000000000001 /* DiskCleanerTests */ = {
+			isa = PBXGroup;
+			children = (
+				T20000010000000000000001 /* FileNodeTests.swift */,
+				T20000010000000000000002 /* FileTypeClassifierTests.swift */,
+				T20000010000000000000003 /* SquarifiedTreemapTests.swift */,
+				T20000010000000000000004 /* ExcludedDirectoryRuleTests.swift */,
+				T20000010000000000000005 /* ScanStatusTests.swift */,
+				T20000010000000000000006 /* SpaceWasterCategoryTests.swift */,
+				T20000010000000000000007 /* SuggestionsEngineTests.swift */,
+				T20000010000000000000008 /* SuggestionsViewModelTests.swift */,
+				T20000010000000000000009 /* DirectoryExclusionStoreTests.swift */,
+				T20000010000000000000010 /* AppUninstallerViewModelTests.swift */,
+				T20000010000000000000011 /* ScanViewModelTests.swift */,
+				T20000010000000000000012 /* DiskSpaceHistoryTests.swift */,
+				T50000010000000000000002 /* Mocks */,
+				T50000010000000000000003 /* Helpers */,
+			);
+			path = DiskCleanerTests;
+			sourceTree = "<group>";
+		};
+		T50000010000000000000002 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				T20000010000000000000013 /* MockDeletionService.swift */,
+				T20000010000000000000015 /* MockSandboxAccessProvider.swift */,
+			);
+			path = Mocks;
+			sourceTree = "<group>";
+		};
+		T50000010000000000000003 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				T20000010000000000000014 /* FileNodeBuilder.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -283,6 +371,23 @@
 			productReference = A30000010000000000000001 /* DiskCleaner.app */;
 			productType = "com.apple.product-type.application";
 		};
+		T60000010000000000000001 /* DiskCleanerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = TA0000010000000000000001 /* Build configuration list for PBXNativeTarget "DiskCleanerTests" */;
+			buildPhases = (
+				T70000010000000000000001 /* Sources */,
+				T40000010000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				T90000010000000000000001 /* PBXTargetDependency */,
+			);
+			name = DiskCleanerTests;
+			productName = DiskCleanerTests;
+			productReference = T30000010000000000000001 /* DiskCleanerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -295,6 +400,10 @@
 				TargetAttributes = {
 					A60000010000000000000001 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					T60000010000000000000001 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = A60000010000000000000001;
 					};
 				};
 			};
@@ -312,6 +421,7 @@
 			projectRoot = "";
 			targets = (
 				A60000010000000000000001 /* DiskCleaner */,
+				T60000010000000000000001 /* DiskCleanerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -376,7 +486,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		T70000010000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				T10000010000000000000001 /* FileNodeTests.swift in Sources */,
+				T10000010000000000000002 /* FileTypeClassifierTests.swift in Sources */,
+				T10000010000000000000003 /* SquarifiedTreemapTests.swift in Sources */,
+				T10000010000000000000004 /* ExcludedDirectoryRuleTests.swift in Sources */,
+				T10000010000000000000005 /* ScanStatusTests.swift in Sources */,
+				T10000010000000000000006 /* SpaceWasterCategoryTests.swift in Sources */,
+				T10000010000000000000007 /* SuggestionsEngineTests.swift in Sources */,
+				T10000010000000000000008 /* SuggestionsViewModelTests.swift in Sources */,
+				T10000010000000000000009 /* DirectoryExclusionStoreTests.swift in Sources */,
+				T10000010000000000000010 /* AppUninstallerViewModelTests.swift in Sources */,
+				T10000010000000000000011 /* ScanViewModelTests.swift in Sources */,
+				T10000010000000000000012 /* DiskSpaceHistoryTests.swift in Sources */,
+				T10000010000000000000013 /* MockDeletionService.swift in Sources */,
+				T10000010000000000000014 /* FileNodeBuilder.swift in Sources */,
+				T10000010000000000000015 /* MockSandboxAccessProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		T90000010000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A60000010000000000000001 /* DiskCleaner */;
+			targetProxy = T80000010000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B10000010000000000000001 /* Debug */ = {
@@ -551,6 +691,42 @@
 			};
 			name = Release;
 		};
+		TB0000010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 25C9H9N953;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.diskcleaner.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DiskCleaner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DiskCleaner";
+			};
+			name = Debug;
+		};
+		TB0000010000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 25C9H9N953;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.diskcleaner.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DiskCleaner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DiskCleaner";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -568,6 +744,15 @@
 			buildConfigurations = (
 				B10000010000000000000001 /* Debug */,
 				B10000010000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		TA0000010000000000000001 /* Build configuration list for PBXNativeTarget "DiskCleanerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				TB0000010000000000000001 /* Debug */,
+				TB0000010000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
