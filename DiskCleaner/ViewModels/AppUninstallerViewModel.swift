@@ -73,11 +73,28 @@ final class AppUninstallerViewModel {
         showingUninstallConfirmation = true
     }
 
-    /// Perform the uninstall using the shared DeletionService
-    func performUninstall(using deletionService: DeletionService, onComplete: (@MainActor @Sendable (_ originalURLs: [URL], _ trashedURLs: [URL], _ app: InstalledApp) -> Void)? = nil) {
+    /// Perform the uninstall using the shared DeletionService.
+    /// When `accessProvider` is supplied, requests sandbox access to the app's
+    /// parent directory before trashing (required under App Sandbox for paths
+    /// not already granted via NSOpenPanel).
+    func performUninstall(
+        using deletionService: any DeletionServiceProtocol,
+        accessProvider: (any SandboxAccessProvider)? = nil,
+        onComplete: (@MainActor @Sendable (_ originalURLs: [URL], _ trashedURLs: [URL], _ app: InstalledApp) -> Void)? = nil
+    ) {
         guard let app = appToUninstall else { return }
         isUninstalling = true
         uninstallError = nil
+
+        // Request sandbox access to the app's parent directory before trashing
+        if let accessProvider {
+            let parentDir = app.bundleURL.deletingLastPathComponent()
+            guard accessProvider.requestAccess(for: parentDir) != nil else {
+                self.uninstallError = "Access denied. Please grant permission to delete the app."
+                self.isUninstalling = false
+                return
+            }
+        }
 
         Task {
             do {

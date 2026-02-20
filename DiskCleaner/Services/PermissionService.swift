@@ -1,6 +1,21 @@
 import AppKit
 import Foundation
 
+/// Protocol for requesting sandbox access to directories (testable via mock)
+@MainActor
+protocol SandboxAccessProvider {
+    /// Request sandbox access to the parent directory of the given URL.
+    /// Returns the granted URL, or nil if the user cancels.
+    func requestAccess(for url: URL) -> URL?
+}
+
+/// Production implementation that shows NSOpenPanel
+struct PermissionSandboxAccessProvider: SandboxAccessProvider {
+    func requestAccess(for url: URL) -> URL? {
+        PermissionService.grantAccessToDirectory(at: url)
+    }
+}
+
 /// Provides folder-selection dialogs for sandboxed file access.
 /// In the App Store sandbox, all filesystem access beyond the container
 /// requires explicit user grants via NSOpenPanel.

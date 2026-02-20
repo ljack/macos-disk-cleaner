@@ -347,7 +347,7 @@ final class AppViewModel {
     // MARK: - App Uninstall
 
     func performAppUninstall() {
-        uninstallerVM.performUninstall(using: deletionService) { [weak self] originalURLs, trashedURLs, app in
+        uninstallerVM.performUninstall(using: deletionService, accessProvider: PermissionSandboxAccessProvider()) { [weak self] originalURLs, trashedURLs, app in
             guard let self else { return }
             // Record each trashed item
             for (index, originalURL) in originalURLs.enumerated() {
