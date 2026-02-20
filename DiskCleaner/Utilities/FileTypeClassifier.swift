@@ -13,14 +13,14 @@ enum FileTypeCategory: String, CaseIterable {
 
     var color: Color {
         switch self {
-        case .code:       return .blue
-        case .media:      return .green
-        case .documents:  return .orange
-        case .archives:   return .purple
-        case .system:     return .gray
-        case .data:       return .cyan
-        case .directory:  return .brown
-        case .other:      return .secondary
+        case .code:       return Color(red: 0.25, green: 0.47, blue: 0.85)
+        case .media:      return Color(red: 0.30, green: 0.69, blue: 0.31)
+        case .documents:  return Color(red: 0.93, green: 0.60, blue: 0.15)
+        case .archives:   return Color(red: 0.61, green: 0.32, blue: 0.84)
+        case .system:     return Color(red: 0.55, green: 0.55, blue: 0.58)
+        case .data:       return Color(red: 0.15, green: 0.70, blue: 0.75)
+        case .directory:  return Color(red: 0.48, green: 0.53, blue: 0.62)
+        case .other:      return Color(red: 0.65, green: 0.60, blue: 0.55)
         }
     }
 
