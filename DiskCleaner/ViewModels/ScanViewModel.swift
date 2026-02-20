@@ -203,7 +203,7 @@ final class ScanViewModel {
     }
 
     /// Walk the tree to find directories marked as permission denied
-    private func collectDeniedDirectories(in node: FileNode) -> [FileNode] {
+    func collectDeniedDirectories(in node: FileNode) -> [FileNode] {
         var denied: [FileNode] = []
         if node.isPermissionDenied && node.parent != nil {
             denied.append(node)

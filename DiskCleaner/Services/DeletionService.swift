@@ -1,40 +1,41 @@
 import AppKit
 
-/// Service for moving files to Trash via FileManager (undoable deletion).
-/// Works in App Sandbox when the security-scoped resource for the file's
-/// parent directory is active (via NSOpenPanel grant or bookmark).
-actor DeletionService {
+/// Protocol for deletion services, enabling testability with mocks.
+protocol DeletionServiceProtocol: Actor {
+    func moveToTrash(urls: [URL]) async throws -> [URL]
+    @discardableResult
+    func moveToTrash(url: URL) async throws -> URL
+}
+
+/// Service for moving files to Trash via NSWorkspace (undoable deletion).
+/// Uses NSWorkspace.recycle for Trash deletion. Under App Sandbox, the caller
+/// must ensure sandbox access has been granted (via NSOpenPanel) for the paths.
+actor DeletionService: DeletionServiceProtocol {
     /// Move URLs to Trash. Returns the new Trash URLs for each item.
     func moveToTrash(urls: [URL]) async throws -> [URL] {
-        try await MainActor.run {
-            var trashedURLs: [URL] = []
-            for url in urls {
-                var resultURL: NSURL?
-                try FileManager.default.trashItem(at: url, resultingItemURL: &resultURL)
-                if let trashed = resultURL as URL? {
-                    trashedURLs.append(trashed)
+        let newURLsByOriginal: [URL: URL] = try await withCheckedThrowingContinuation { continuation in
+            NSWorkspace.shared.recycle(urls) { newURLs, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: newURLs)
                 }
             }
-            return trashedURLs
         }
+        // Return trash URLs in the same order as the input
+        return urls.compactMap { newURLsByOriginal[$0] }
     }
 
     /// Move a single URL to Trash. Returns the Trash URL.
     @discardableResult
     func moveToTrash(url: URL) async throws -> URL {
-        try await MainActor.run {
-            var resultURL: NSURL?
-            try FileManager.default.trashItem(at: url, resultingItemURL: &resultURL)
-            return (resultURL as URL?) ?? url
-        }
+        let results = try await moveToTrash(urls: [url])
+        return results.first ?? url
     }
 
     /// Restore an item from Trash to its original location.
-    /// Note: In sandbox, restore only works within the same app session since
-    /// access to the Trash URL may not persist across launches.
     func restoreFromTrash(trashURL: URL, to originalURL: URL) async throws {
         try await MainActor.run {
-            // Ensure parent directory exists
             let parent = originalURL.deletingLastPathComponent()
             try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
             try FileManager.default.moveItem(at: trashURL, to: originalURL)
