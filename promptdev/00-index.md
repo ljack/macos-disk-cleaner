@@ -11,6 +11,9 @@ Prompt chain analysis and reproduction plan for the DiskCleaner macOS applicatio
 | [03-prompt-chain.md](03-prompt-chain.md) | Runnable prompt collection — the reproduction recipe |
 | [04-dependency-graph.md](04-dependency-graph.md) | File dependency graph and build order |
 | [05-conventions.md](05-conventions.md) | Coding conventions and patterns to enforce |
+| [06-golden-first-prompt.md](06-golden-first-prompt.md) | Single-prompt rebuild attempt |
+| [REPROMPTING.md](REPROMPTING.md) | Full framework document — what reprompting is and why it matters |
+| [LOVABLE-CONTEXT-PROMPT.md](LOVABLE-CONTEXT-PROMPT.md) | Context prompt for updating repromptable.lovable.app |
 
 ## How to Use
 
